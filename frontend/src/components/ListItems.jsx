@@ -33,7 +33,7 @@ function ListItems() {
         </ListItemIcon>
         <ListItemText primary="Dashboard" />
       </ListItemButton>
-      <ListItemButton onClick={() => { setActive('transactions') }} component={Link} to="/transactions"
+      <ListItemButton onClick={() => { setActive('Transactions') }} component={Link} to="/transactions"
         sx={{
           "&.Mui-selected": {
             backgroundColor: "#0D97FF"
@@ -42,7 +42,7 @@ function ListItems() {
             backgroundColor: "#6CA9FA"
           }
         }}
-        selected={active == 'transactions' ? true : false}>
+        selected={active == 'Transactions' ? true : false}>
         <ListItemIcon>
           <ReceiptIcon />
         </ListItemIcon>

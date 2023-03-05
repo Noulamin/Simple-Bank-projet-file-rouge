@@ -1,10 +1,10 @@
 const router = require('express').Router()
 
-const {GetAllUsers, SendAmount } = require('../controllers/DashboardController.js')
+const { GetAllTransactions } = require('../controllers/TransactionsController')
 
 
-router.get('/:token', GetAllUsers)
-router.post('/SendAmount', SendAmount)
+router.get('/:token', GetAllTransactions)
+// router.post('/AddApartment', AddApartment)
 // router.post('/UpdateApartment/:id', UpdateApartment)
 // router.post('/DeleteApartment/:id', DeleteApartment)
 

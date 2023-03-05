@@ -22,6 +22,7 @@ function DashboardContent() {
   const [OpenSendModal, setOpenSendModal] = useState(false)
   const [OpenRequestModal, setOpenRequestModal] = useState(false)
   const [UserData, setUserData] = useState()
+  const [UserTransactionsData, setUserTransactionsData] = useState()
   const [AllFriendsData, setAllFriendsData] = useState()
   const [AllFriends, setAllFriends] = useState([''])
   const [testData, settestData] = useState()
@@ -53,9 +54,20 @@ function DashboardContent() {
     VerifyToken().then(async (result) => {
       if (result) {
         setUserData(result)
-        await axios.get('http://localhost:8080/dashboard/').then((res) => {
+        await axios.get('http://localhost:8080/dashboard/' + Cookies.get('token')).then((res) => {
           if (res.status === 200) {
             setAllFriendsData(res.data)
+          }
+          // setTimeout(() => setIsProgress(false), 1000);
+        }).catch((error) => {
+          setIsProgress(false)
+          console.log(error)
+        })
+
+        await axios.get('http://localhost:8080/transactions/' + Cookies.get('token')).then((res) => {
+          if (res.status === 200) {
+            console.log(res.data)
+            setUserTransactionsData(res.data)
           }
           setTimeout(() => setIsProgress(false), 1000);
         }).catch((error) => {
@@ -126,8 +138,8 @@ function DashboardContent() {
       return
     }
 
-    console.log(SendTargetValue)
-    console.log(data.get('amount'))
+    // console.log(SendTargetValue)
+    // console.log(data.get('amount'))
 
     const SendData = {
       token: Cookies.get('token'),
@@ -244,8 +256,6 @@ function DashboardContent() {
           </Button>
         </Grid>
 
-
-
         <Modal
           open={OpenSendModal}
           // onClose={handleClose}
@@ -290,13 +300,6 @@ function DashboardContent() {
           </Box>
         </Modal>
       </Grid>
-
-      {/* <Snackbar
-        open={ShowAlert}
-        autoHideDuration={4000}
-        onClose={() => { setShowAlert(false) }}
-        message={AlertMessage}
-      /> */}
 
       <Snackbar
         open={ShowAlert}

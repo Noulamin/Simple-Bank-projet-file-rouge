@@ -1,8 +1,6 @@
 const mongoose = require('mongoose')
 const crypto = require('crypto')
 
-let password;
-
 const userSchema = new mongoose.Schema({
     _id: {
         default: () => new mongoose.Types.ObjectId().toString(),

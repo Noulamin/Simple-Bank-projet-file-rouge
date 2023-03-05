@@ -13,6 +13,7 @@ mongoose.connect(process.env.DATABASE).then(() =>
 //Routers
 const authRouter = require('./routes/authRouter')
 const dashboardRouter = require('./routes/dashboardRouter')
+const transactionsRouter = require('./routes/transactionsRouter')
 
 app.use(express.json())
 app.use(cookieParser())
@@ -22,6 +23,7 @@ app.use(cors(
   }
 ))
 
+app.use('/transactions', transactionsRouter)
 app.use('/dashboard', dashboardRouter)
 app.use('/api/auth', authRouter)
 

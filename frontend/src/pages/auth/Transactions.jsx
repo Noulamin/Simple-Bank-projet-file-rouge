@@ -78,7 +78,7 @@ function TransactionsContent() {
 
   return (
     <>
-      <Grid item fullWidth>
+      <Grid item >
         <div style={{ fontSize: 26, marginTop: 40, marginBottom: 7 }}>
           Transactions
         </div>
