@@ -1,32 +1,88 @@
 const asyncHandler = require('express-async-handler')
-const apartmentsModel = require("../models/ApartmentsModel");
+const apartmentsModel = require("../models/ApartmentsModel")
+const User = require('../models/UserModel')
+const { TokenVerification } = require('../middlewares/Auth')
 
 // Get
 const GetAllUsers = asyncHandler(async (req, res) => {
 
-    const result = await apartmentsModel.find({});
+    const result = await User.find({});
     if (result) {
         res.send(result).status(200)
     } else {
-        res.status(404).send("Something is wrong.")
+        res.status(222).send("Something is wrong.")
     }
 })
 
 // Get
-const GetAllApartments = asyncHandler(async (req, res) => {
+const SendAmount = asyncHandler(async (req, res) => {
 
-    const result = await apartmentsModel.find({});
-    if (result) {
-        res.send(result).status(200)
-    } else {
-        res.status(404).send("Something is wrong.")
-    }
+    console.log(req.body)
+    const { token, target, amount } = req.body
+    TokenVerification(token).then(async (data) => {
+
+        if (data) {
+
+            let id = data.id
+            let senderData
+            let targetData
+            User.findOne({ id }, (error, sender) => {
+                if (sender) {
+                    console.log(id)
+
+                    senderData = sender
+                    id = target
+                    let lol = '640472caf45f0a93778db27f'
+                    User.findOne({ lol }, (error, user) => {
+                        if (user) {
+                            console.log(user.firstName)
+                            targetData = user
+
+                            if (senderData.balance < amount) {
+                                // return res.status(222).send('insufficient sender balance.')
+                            }
+                            else {
+                                console.log('actuel sender b : ' + senderData.balance + ' ' + senderData.firstName)
+                                console.log('actuel target b : ' + targetData.balance + ' ' + targetData.firstName)
+                                senderData.balance = senderData.balance - amount
+                                targetData.balance = targetData.balance + amount
+                                console.log('sender b : ' + senderData.balance)
+                                console.log('target b : ' + targetData.balance)
+                                updateUserData(senderData._id, senderData)
+                                updateUserData(targetData._id, targetData)
+                                // return res.status(200).send(amount + '$ has been successfully sent to ' + targetData.firstName + ' ' + targetData.lastName + '.')
+                            }
+                        }
+                        else {
+                            // return res.status(222).send('Target not exist anymore.')
+                        }
+
+                    })
+                }
+                else {
+                    // return res.status(222).send('You are not exist anymore.')
+                }
+            })
+
+            console.log('trying ...')
+
+            let lol = '640472caf45f0a93778db27f'
+            User.findOne({ lol }, (error, user) => {
+                if (user) {
+                    console.log(user.firstName)
+                }
+            })
+        }
+        else {
+            return res.status(222).send('invalid token.')
+        }
+    })
 })
 
 // Add
 const AddApartment = asyncHandler(async (req, res) => {
 
-    const { Apartment, Rent_Price, Rented, Expiry_Date} = req.body;
+    const { Apartment, Rent_Price, Rented, Expiry_Date } = req.body;
     if (!Apartment || !Rent_Price || !Rented || !Expiry_Date) {
         res.status(400).send('Please fill all fields.')
     }
@@ -93,4 +149,14 @@ const DeleteApartment = asyncHandler(async (req, res) => {
     }
 })
 
-module.exports = { AddApartment, UpdateApartment, DeleteApartment, GetAllApartments }
+const updateUserData = asyncHandler(async (userId, data) => {
+
+    try {
+        await User.findByIdAndUpdate(userId, data)
+    } catch (error) {
+        console.error(error)
+        throw error
+    }
+})
+
+module.exports = { GetAllUsers, SendAmount, AddApartment, UpdateApartment, DeleteApartment }

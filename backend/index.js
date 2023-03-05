@@ -12,7 +12,7 @@ mongoose.connect(process.env.DATABASE).then(() =>
 
 //Routers
 const authRouter = require('./routes/authRouter')
-// const apartments = require('./routes/apartmentsRouter')
+const dashboardRouter = require('./routes/dashboardRouter')
 
 app.use(express.json())
 app.use(cookieParser())
@@ -22,7 +22,7 @@ app.use(cors(
   }
 ))
 
-// app.use('/apartments', apartments)
+app.use('/dashboard', dashboardRouter)
 app.use('/api/auth', authRouter)
 
 const port = process.env.PORT || 8080

@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import VerifyToken from '../../components/VerifyToken'
-import { Button, Modal, Paper, Grid, Typography, Box, Autocomplete, TextField } from '@mui/material';
+import { Button, Snackbar, Modal, Paper, Grid, Typography, Box, Autocomplete, TextField } from '@mui/material';
+import { LoadingButton } from '@mui/lab';
 import gifImg from '../../images/gif.gif'
 import '../../style/dashboard.css'
+import Cookies from 'js-cookie';
+import axios from 'axios';
 
 
 const options = ['Option 1', 'Option 2', 'Option 3', 'Option 4', 'Option 5', 'Option 6', 'lolll 2', 'lolll 3', 'lolll 4', 'lolll 5', 'lolll 6', 'ahmed'];
@@ -12,9 +15,18 @@ function DashboardContent() {
   const [OpenSendModal, setOpenSendModal] = useState(false)
   const [OpenRequestModal, setOpenRequestModal] = useState(false)
   const [UserData, setUserData] = useState()
+  const [AllFriendsData, setAllFriendsData] = useState()
+  const [AllFriends, setAllFriends] = useState([''])
+  const [testData, settestData] = useState()
 
-  const [value, setValue] = React.useState(options[0])
-  const [inputValue, setInputValue] = React.useState('')
+  const [SendTargetValue, setSendTargetValue] = React.useState('')
+  const [SendAmountError, setSendAmountError] = React.useState(false)
+  const [SendTargetValueError, setSendTargetValueError] = React.useState(false)
+
+  const [ShowAlert, setShowAlert] = useState(false)
+  const [AlertMessage, setAlertMessage] = useState('')
+
+  const [SendIsLoading, setSendIsLoading] = useState(false)
 
   const style = {
     position: 'absolute',
@@ -33,162 +45,241 @@ function DashboardContent() {
     VerifyToken().then(async (result) => {
       if (result) {
         setUserData(result)
+
+        await axios.get('http://localhost:8080/dashboard/').then((res) => {
+          if (res.status === 200) {
+            // console.log(res.data)
+            setAllFriendsData(res.data)
+          }
+        }).catch((error) => {
+          console.log(error)
+        })
         // setTimeout(() => setIsProgress(false), 1000);
       }
     })
   }, []);
 
+
+  const SendAmountHandler = async (event) => {
+    event.preventDefault()
+    const data = new FormData(event.currentTarget)
+    setSendIsLoading(true)
+
+    if (data.get('amount') == '') {
+      setSendTargetValueError(true)
+      setSendIsLoading(false)
+    }
+    else {
+      setSendTargetValueError(false)
+    }
+
+    if (!SendTargetValue) {
+      setSendAmountError(true)
+      setSendIsLoading(false)
+    }
+    else {
+      if (!AllFriends.includes(SendTargetValue)) {
+        setAlertMessage("Wrong target.")
+        setShowAlert(true)
+        setSendAmountError(true)
+        setSendIsLoading(false)
+        return
+      }
+      else {
+        setSendAmountError(false)
+      }
+    }
+
+    if (data.get('amount') == '' || !SendTargetValue) {
+      setAlertMessage("Please fill all fields.")
+      setSendIsLoading(false)
+      setShowAlert(true)
+      return
+    }
+
+    if (data.get('amount') == '0') {
+      setAlertMessage("You cannot send 0 amount.")
+      setSendIsLoading(false)
+      setShowAlert(true)
+      return
+    }
+
+    if (UserData.balance < data.get('amount')) {
+      setAlertMessage("insufficient balance.")
+      setSendIsLoading(false)
+      setShowAlert(true)
+      return
+    }
+
+    console.log(SendTargetValue)
+    console.log(data.get('amount'))    
+
+    const SendData = {
+      token: Cookies.get('token'),
+      target: AllFriendsData.find(user => user.firstName + ' ' + user.lastName === SendTargetValue)._id,
+      amount: data.get('amount'),
+    }
+
+    try {
+      const res = await axios.post('http://localhost:8080/dashboard/SendAmount', SendData, { withCredentials: true });
+      if (res.status === 200) {
+        setAlertMessage(res.data)
+        setShowAlert(true)
+        setSendIsLoading(false)
+      }
+      else {
+        setAlertMessage(res.data)
+        setShowAlert(true)
+        setSendIsLoading(false)
+      }
+    } catch (error) {
+      setAlertMessage(error.toJSON().message)
+      setShowAlert(true)
+      setSendIsLoading(false)
+    }
+  }
+
   const check = () => {
-    console.log(UserData)
+    console.log(AllFriends)
   }
 
   return (
-    <Grid container spacing={20}>
-      <Grid item xs={12} md={4} lg={6}>
-        <div style={{ fontSize: 26, marginTop: 9 }}>
-          Welcome Back, {UserData && UserData.firstName}
-        </div>
-        <div className="img_container">
-          <img className="gifImg" src={gifImg} />
-          <p className="your">Your balance</p>
-          <p className="balance"><sup>$</sup>{UserData && UserData.balance}</p>
-        </div>
+    <>
+      <Grid container spacing={20}>
+        <Grid item xs={12} md={4} lg={6}>
+          <div style={{ fontSize: 26, marginTop: 9 }}>
+            Welcome Back, {UserData && UserData.firstName}
+          </div>
+          <div className="img_container">
+            <img className="gifImg" src={gifImg} />
+            <p className="your">Your balance</p>
+            <p className="balance"><sup>$</sup>{UserData && UserData.balance}</p>
+          </div>
 
-        <Button
-          sx={{ px: 4.6 }}
-          variant="contained"
-          className='sendButton'
-          onClick={() => { setOpenSendModal(true) }}
-        >
-          Send
-        </Button>
-        <Button
-          sx={{ px: 3, mx: 1.3 }}
-          variant="contained"
-          onClick={() => { setOpenRequestModal(true) }}
-        >
-          Request
-        </Button>
+          <Button
+            sx={{ px: 4.6 }}
+            variant="contained"
+            className='sendButton'
+            onClick={() => {
+              let Data = []
+              for (let friend in AllFriendsData) {
+                Data.push(AllFriendsData[friend].firstName + ' ' + AllFriendsData[friend].lastName)
+              }
+              // console.log(Data)
+              setAllFriends(Data)
+              setOpenSendModal(true)
+            }}
+          >
+            Send
+          </Button>
+          <Button
+            sx={{ px: 3, mx: 1.3 }}
+            variant="contained"
+            onClick={() => { setOpenRequestModal(true) }}
+          >
+            Request
+          </Button>
 
-        <div style={{ fontSize: 18, marginTop: 8, marginBottom: 8 }}>
-          Recent activities
-        </div>
+          <div style={{ fontSize: 18, marginTop: 8, marginBottom: 8 }}>
+            Recent activities
+          </div>
 
-        <Paper
-          sx={{
-            p: 2,
-            display: 'flex',
-            flexDirection: 'column',
-            height: 355,
-          }}
+          <Paper
+            sx={{
+              p: 2,
+              display: 'flex',
+              flexDirection: 'column',
+              height: 355,
+            }}
+          >
+          </Paper>
+        </Grid>
+        <Grid item xs={12} md={4} lg={6}>
+          <div style={{ fontSize: 18, marginTop: 55, marginBottom: 8 }}>
+            Send again
+          </div>
+          <Paper
+            sx={{
+              p: 2,
+              display: 'flex',
+              flexDirection: 'column',
+              height: 205,
+            }}
+          >
+
+          </Paper>
+          <div style={{ fontSize: 18, marginTop: 8, marginBottom: 8 }}>
+            Bank and cards
+          </div>
+          <Paper
+            sx={{
+              p: 2,
+              display: 'flex',
+              flexDirection: 'column',
+              height: 205,
+            }}
+          >
+
+          </Paper>
+          <Button variant="contained" sx={{ my: 2 }} onClick={() => { check() }}>
+            Link a Bank or Card
+          </Button>
+        </Grid>
+
+
+
+        <Modal
+          open={OpenSendModal}
+          // onClose={handleClose}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
         >
-        </Paper>
+          <Box component="form" onSubmit={SendAmountHandler} sx={style} >
+            <Typography id="modal-modal-title" variant="h6" component="h2">
+              Send Amount
+            </Typography>
+            <Typography id="modal-modal-description" sx={{ mt: 2 }}>
+              {/* Duis mollis, est non commodo luctus, nisi erat porttitor ligula. */}
+            </Typography>
+
+            <Autocomplete
+              sx={{ my: 1 }}
+              fullWidth
+              size='small'
+              onChange={(event, newValue) => {
+                setSendTargetValue(newValue);
+              }}
+              onInputChange={(event, newInputValue) => {
+                setSendTargetValue(newInputValue);
+              }}
+              id="controllable-states-demo"
+              options={AllFriends}
+              name='Sendtarget'
+
+              renderInput={(params) => <TextField {...params} error={SendAmountError} label="Send to" />}
+            />
+            <TextField sx={{ my: 1 }} error={SendTargetValueError} type='number' id="outlined-basic" label="Amount" name='amount' variant="outlined" fullWidth size='small' />
+            {/* <Button sx={{ my: 1 }} type='submit' variant="contained">Send</Button> */}
+            <LoadingButton
+              loading={SendIsLoading}
+              type="submit"
+              variant="contained"
+              sx={{ my: 1,px: 3.1 }}
+            >
+              Send
+            </LoadingButton>
+            <Button sx={{ my: 1, mx: 2 }} variant="contained" onClick={() => { setOpenSendModal(false); setSendIsLoading(false) }}>Cancel</Button>
+          </Box>
+        </Modal>
       </Grid>
-      <Grid item xs={12} md={4} lg={6}>
-        <div style={{ fontSize: 18, marginTop: 55, marginBottom: 8 }}>
-          Send again
-        </div>
-        <Paper
-          sx={{
-            p: 2,
-            display: 'flex',
-            flexDirection: 'column',
-            height: 205,
-          }}
-        >
 
-        </Paper>
-        <div style={{ fontSize: 18, marginTop: 8, marginBottom: 8 }}>
-          Bank and cards
-        </div>
-        <Paper
-          sx={{
-            p: 2,
-            display: 'flex',
-            flexDirection: 'column',
-            height: 205,
-          }}
-        >
-
-        </Paper>
-        <Button variant="contained" sx={{ my: 2 }} onClick={() => { check() }}>
-          Link a Bank or Card
-        </Button>
-      </Grid>
-
-      <Modal
-        open={OpenSendModal}
-        // onClose={handleClose}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-      >
-        <Box sx={style}>
-          <Typography id="modal-modal-title" variant="h6" component="h2">
-            Send Amount
-          </Typography>
-          <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-            {/* Duis mollis, est non commodo luctus, nisi erat porttitor ligula. */}
-          </Typography>
-
-          <Autocomplete
-            sx={{ my: 1 }}
-            fullWidth
-            size='small'
-            // value={value}
-            onChange={(event, newValue) => {
-              setValue(newValue);
-            }}
-            inputValue={inputValue}
-            onInputChange={(event, newInputValue) => {
-              setInputValue(newInputValue);
-            }}
-            id="controllable-states-demo"
-            options={options}
-            renderInput={(params) => <TextField {...params} label="Send to" />}
-          />
-
-          <TextField sx={{ my: 1 }} type='number' id="outlined-basic" label="Amount" variant="outlined" fullWidth size='small' />
-          <Button sx={{ my: 1 }} variant="contained">Send</Button>
-          <Button sx={{ my: 1, mx: 2 }} variant="contained" onClick={() => { setOpenSendModal(false) }}>Cancel</Button>
-        </Box>
-      </Modal>
-
-      <Modal
-        open={OpenRequestModal}
-        // onClose={handleClose}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-      >
-        <Box sx={style}>
-          <Typography id="modal-modal-title" variant="h6" component="h2">
-            Request Amount
-          </Typography>
-          <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-            {/* Duis mollis, est non commodo luctus, nisi erat porttitor ligula. */}
-          </Typography>
-
-          <Autocomplete
-            sx={{ my: 1 }}
-            fullWidth
-            size='small'
-            // value={value}
-            onChange={(event, newValue) => {
-              setValue(newValue);
-            }}
-            inputValue={inputValue}
-            onInputChange={(event, newInputValue) => {
-              setInputValue(newInputValue);
-            }}
-            id="controllable-states-demo"
-            options={options}
-            renderInput={(params) => <TextField {...params} label="Request from" />}
-          />
-          <TextField sx={{ my: 1 }} type='number' id="outlined-basic" label="Amount" variant="outlined" fullWidth size='small' />
-          <Button sx={{ my: 1 }} variant="contained">Request</Button>
-          <Button sx={{ my: 1, mx: 2 }} variant="contained" onClick={() => { setOpenRequestModal(false) }}>Cancel</Button>
-        </Box>
-      </Modal>
-    </Grid>
+      <Snackbar
+        open={ShowAlert}
+        autoHideDuration={4000}
+        onClose={() => { setShowAlert(false) }}
+        message={AlertMessage}
+      />
+    </>
   )
 }
 

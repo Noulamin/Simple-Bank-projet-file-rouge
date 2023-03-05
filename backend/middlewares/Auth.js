@@ -8,7 +8,7 @@ exports.TokenVerification = (token) => {
             } else {
                 result(false)
             }
-        });
+        })
     })
 }
 
