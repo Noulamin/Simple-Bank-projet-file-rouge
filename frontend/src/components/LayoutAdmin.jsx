@@ -67,23 +67,9 @@ function LayoutAdmin() {
 
     const [open, setOpen] = useState(true)
     const [IsProgress, setIsProgress] = useState(true)
-    const [UserData, setUserData] = useState()
 
     const toggleDrawer = () => {
         setOpen(!open)
-    }
-
-    useEffect(() => {
-        VerifyToken().then(async (result) => {
-            if (result) {
-                setUserData(result)
-                setTimeout(() => setIsProgress(false), 1000);
-            }
-        })
-    }, []);
-
-    const check = () => {
-        console.log(UserData)
     }
 
     return (
@@ -157,7 +143,7 @@ function LayoutAdmin() {
                 >
                     <Toolbar />
                     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-                        <Outlet />
+                        <Outlet context={[IsProgress, setIsProgress]}/>
                     </Container>
                 </Box>
             </Box>

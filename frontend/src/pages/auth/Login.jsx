@@ -23,7 +23,7 @@ export default function Login() {
 
     const LoginData = {
       email: data.get('email'),
-      password: data.get('password'),
+      password: data.get('password')
     }
 
     try {

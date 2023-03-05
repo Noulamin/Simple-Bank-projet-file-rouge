@@ -22,7 +22,7 @@ const Login = asyncHandler((req, res) => {
             { id: user._id },
             process.env.JWT_SECRET
         )
-        return res.cookie('token', token, { expire: new Date() + 8062000 }).status(200).send(token)
+        return res.cookie('token', token, { maxAge: 86400000 }).status(200).send(token)
     })
 })
 

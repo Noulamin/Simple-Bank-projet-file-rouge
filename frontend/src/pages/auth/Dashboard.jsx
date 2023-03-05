@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useOutletContext } from "react-router-dom";
 import VerifyToken from '../../components/VerifyToken'
-import { Button, Snackbar, Modal, Paper, Grid, Typography, Box, Autocomplete, TextField } from '@mui/material';
+import { Button, Snackbar, Alert, Modal, Paper, Grid, Typography, Box, Autocomplete, TextField } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import gifImg from '../../images/gif.gif'
 import '../../style/dashboard.css'
@@ -11,6 +12,12 @@ import axios from 'axios';
 const options = ['Option 1', 'Option 2', 'Option 3', 'Option 4', 'Option 5', 'Option 6', 'lolll 2', 'lolll 3', 'lolll 4', 'lolll 5', 'lolll 6', 'ahmed'];
 
 function DashboardContent() {
+
+  const [IsProgress, setIsProgress] = useOutletContext()
+
+  const check = () => {
+    setIsProgress(true)
+  }
 
   const [OpenSendModal, setOpenSendModal] = useState(false)
   const [OpenRequestModal, setOpenRequestModal] = useState(false)
@@ -23,8 +30,9 @@ function DashboardContent() {
   const [SendAmountError, setSendAmountError] = React.useState(false)
   const [SendTargetValueError, setSendTargetValueError] = React.useState(false)
 
-  const [ShowAlert, setShowAlert] = useState(false)
+  const [AlertType, setAlertType] = useState('info')
   const [AlertMessage, setAlertMessage] = useState('')
+  const [ShowAlert, setShowAlert] = useState(false)
 
   const [SendIsLoading, setSendIsLoading] = useState(false)
 
@@ -41,22 +49,25 @@ function DashboardContent() {
     borderRadius: 1.5
   }
 
-  useEffect(() => {
+  const getUserData = async () => {
     VerifyToken().then(async (result) => {
       if (result) {
         setUserData(result)
-
         await axios.get('http://localhost:8080/dashboard/').then((res) => {
           if (res.status === 200) {
-            // console.log(res.data)
             setAllFriendsData(res.data)
           }
+          setTimeout(() => setIsProgress(false), 1000);
         }).catch((error) => {
+          setIsProgress(false)
           console.log(error)
         })
-        // setTimeout(() => setIsProgress(false), 1000);
       }
     })
+  }
+
+  useEffect(() => {
+    getUserData()
   }, []);
 
 
@@ -79,6 +90,7 @@ function DashboardContent() {
     }
     else {
       if (!AllFriends.includes(SendTargetValue)) {
+        setAlertType('error')
         setAlertMessage("Wrong target.")
         setShowAlert(true)
         setSendAmountError(true)
@@ -91,6 +103,7 @@ function DashboardContent() {
     }
 
     if (data.get('amount') == '' || !SendTargetValue) {
+      setAlertType('info')
       setAlertMessage("Please fill all fields.")
       setSendIsLoading(false)
       setShowAlert(true)
@@ -98,6 +111,7 @@ function DashboardContent() {
     }
 
     if (data.get('amount') == '0') {
+      setAlertType('error')
       setAlertMessage("You cannot send 0 amount.")
       setSendIsLoading(false)
       setShowAlert(true)
@@ -105,6 +119,7 @@ function DashboardContent() {
     }
 
     if (UserData.balance < data.get('amount')) {
+      setAlertType('error')
       setAlertMessage("insufficient balance.")
       setSendIsLoading(false)
       setShowAlert(true)
@@ -112,7 +127,7 @@ function DashboardContent() {
     }
 
     console.log(SendTargetValue)
-    console.log(data.get('amount'))    
+    console.log(data.get('amount'))
 
     const SendData = {
       token: Cookies.get('token'),
@@ -123,24 +138,26 @@ function DashboardContent() {
     try {
       const res = await axios.post('http://localhost:8080/dashboard/SendAmount', SendData, { withCredentials: true });
       if (res.status === 200) {
+        setIsProgress(true)
+        setAlertType('success')
         setAlertMessage(res.data)
         setShowAlert(true)
         setSendIsLoading(false)
+        setOpenSendModal(false)
+        getUserData()
       }
       else {
+        setAlertType('error')
         setAlertMessage(res.data)
         setShowAlert(true)
         setSendIsLoading(false)
       }
     } catch (error) {
-      setAlertMessage(error.toJSON().message)
+      setAlertType('error')
+      setAlertMessage(error)
       setShowAlert(true)
       setSendIsLoading(false)
     }
-  }
-
-  const check = () => {
-    console.log(AllFriends)
   }
 
   return (
@@ -163,9 +180,10 @@ function DashboardContent() {
             onClick={() => {
               let Data = []
               for (let friend in AllFriendsData) {
-                Data.push(AllFriendsData[friend].firstName + ' ' + AllFriendsData[friend].lastName)
+                if (UserData._id != AllFriendsData[friend]._id) {
+                  Data.push(AllFriendsData[friend].firstName + ' ' + AllFriendsData[friend].lastName)
+                }
               }
-              // console.log(Data)
               setAllFriends(Data)
               setOpenSendModal(true)
             }}
@@ -264,7 +282,7 @@ function DashboardContent() {
               loading={SendIsLoading}
               type="submit"
               variant="contained"
-              sx={{ my: 1,px: 3.1 }}
+              sx={{ my: 1, px: 3.1 }}
             >
               Send
             </LoadingButton>
@@ -273,12 +291,20 @@ function DashboardContent() {
         </Modal>
       </Grid>
 
-      <Snackbar
+      {/* <Snackbar
         open={ShowAlert}
         autoHideDuration={4000}
         onClose={() => { setShowAlert(false) }}
         message={AlertMessage}
-      />
+      /> */}
+
+      <Snackbar
+        open={ShowAlert}
+        autoHideDuration={4000}
+        onClose={() => { setShowAlert(false) }}
+      >
+        <Alert variant="filled" sx={{ width: '100%' }} severity={AlertType}>{AlertMessage}</Alert>
+      </Snackbar>
     </>
   )
 }

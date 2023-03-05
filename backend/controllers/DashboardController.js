@@ -23,53 +23,48 @@ const SendAmount = asyncHandler(async (req, res) => {
 
         if (data) {
 
-            let id = data.id
+            let _id = data.id
             let senderData
             let targetData
-            User.findOne({ id }, (error, sender) => {
+            User.findOne({ _id }, (error, sender) => {
                 if (sender) {
-                    console.log(id)
-
                     senderData = sender
-                    id = target
-                    let lol = '640472caf45f0a93778db27f'
-                    User.findOne({ lol }, (error, user) => {
+                    _id = target
+                    User.findOne({ _id }, (error, user) => {
                         if (user) {
                             console.log(user.firstName)
                             targetData = user
 
                             if (senderData.balance < amount) {
-                                // return res.status(222).send('insufficient sender balance.')
+                                return res.status(222).send('insufficient sender balance.')
                             }
                             else {
-                                console.log('actuel sender b : ' + senderData.balance + ' ' + senderData.firstName)
-                                console.log('actuel target b : ' + targetData.balance + ' ' + targetData.firstName)
-                                senderData.balance = senderData.balance - amount
-                                targetData.balance = targetData.balance + amount
-                                console.log('sender b : ' + senderData.balance)
-                                console.log('target b : ' + targetData.balance)
-                                updateUserData(senderData._id, senderData)
-                                updateUserData(targetData._id, targetData)
-                                // return res.status(200).send(amount + '$ has been successfully sent to ' + targetData.firstName + ' ' + targetData.lastName + '.')
+                                if(senderData._id != targetData._id)
+                                {
+                                    console.log('actuel sender b : ' + senderData.balance + ' ' + senderData.firstName)
+                                    console.log('actuel target b : ' + targetData.balance + ' ' + targetData.firstName)
+                                    senderData.balance = parseInt(senderData.balance) - parseInt(amount)
+                                    targetData.balance = parseInt(targetData.balance) + parseInt(amount)
+                                    console.log('sender b : ' + senderData.balance)
+                                    console.log('target b : ' + targetData.balance)
+                                    updateUserData(senderData._id, senderData)
+                                    updateUserData(targetData._id, targetData)
+                                    return res.status(200).send(amount + '$ has been successfully sent to ' + targetData.firstName + ' ' + targetData.lastName + '.')
+                                }
+                                else
+                                {
+                                    return res.status(222).send('You cannot send to yourself.')
+                                }
                             }
                         }
                         else {
-                            // return res.status(222).send('Target not exist anymore.')
+                            return res.status(222).send('Target not exist anymore.')
                         }
 
                     })
                 }
                 else {
-                    // return res.status(222).send('You are not exist anymore.')
-                }
-            })
-
-            console.log('trying ...')
-
-            let lol = '640472caf45f0a93778db27f'
-            User.findOne({ lol }, (error, user) => {
-                if (user) {
-                    console.log(user.firstName)
+                    return res.status(222).send('You are not exist anymore.')
                 }
             })
         }
