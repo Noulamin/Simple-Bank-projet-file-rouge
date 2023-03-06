@@ -19,7 +19,7 @@
 
     /* width */
     ::-webkit-scrollbar {
-      width: 10px;
+      width: 7px;
     }
 
     /* Track */
@@ -29,13 +29,13 @@
 
     /* Handle */
     ::-webkit-scrollbar-thumb {
-      background: #888;
+      background: #b6b6b6;
       border-radius: 45px;
     }
 
     /* Handle on hover */
     ::-webkit-scrollbar-thumb:hover {
-      background: #555;
+      background: #888;
     }
   </style>
   <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
@@ -64,6 +64,19 @@
       To begin the development, run `npm start` or `yarn start`.
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
+    <!-- <script src="https://cdn.onesignal.com/sdks/OneSignalSDK.js" async=""></script>
+<script>
+  window.OneSignal = window.OneSignal || [];
+  OneSignal.push(function() {
+    OneSignal.init({
+      appId: "b8ccbd34-20d0-45fe-a7ea-c385ab4d58a3",
+      safari_web_id: "web.onesignal.auto.5f2b561a-4bc4-4806-b010-c7853696b689",
+      notifyButton: {
+        enable: true,
+      },
+      subdomainName: "awdiii",
+    });
+  });
+</script> -->
 </body>
-
 </html>

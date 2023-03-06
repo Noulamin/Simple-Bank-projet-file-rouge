@@ -14,6 +14,10 @@ const TransactionsSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    product: {
+        type: String,
+        required: true,
+    },
     amount: {
         type: String,
         required: true

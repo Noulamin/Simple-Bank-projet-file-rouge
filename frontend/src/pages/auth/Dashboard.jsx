@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useOutletContext } from "react-router-dom";
 import VerifyToken from '../../components/VerifyToken'
-import { Button, Snackbar, Alert, Modal, Paper, Grid, Typography, Box, Autocomplete, TextField } from '@mui/material';
+import { Button, Snackbar, Alert, Modal, Paper, Grid, Typography, Box, Autocomplete, CircularProgress, TextField } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableRow from '@mui/material/TableRow';
+import { styled } from '@mui/material/styles';
 import gifImg from '../../images/gif.gif'
 import '../../style/dashboard.css'
 import Cookies from 'js-cookie';
 import axios from 'axios';
-
-
-const options = ['Option 1', 'Option 2', 'Option 3', 'Option 4', 'Option 5', 'Option 6', 'lolll 2', 'lolll 3', 'lolll 4', 'lolll 5', 'lolll 6', 'ahmed'];
 
 function DashboardContent() {
 
@@ -25,17 +28,21 @@ function DashboardContent() {
   const [UserTransactionsData, setUserTransactionsData] = useState()
   const [AllFriendsData, setAllFriendsData] = useState()
   const [AllFriends, setAllFriends] = useState([''])
-  const [testData, settestData] = useState()
 
-  const [SendTargetValue, setSendTargetValue] = React.useState('')
-  const [SendAmountError, setSendAmountError] = React.useState(false)
-  const [SendTargetValueError, setSendTargetValueError] = React.useState(false)
+  const [SendTargetValue, setSendTargetValue] = useState('')
+  const [SendAmountError, setSendAmountError] = useState(false)
+  const [SendTargetValueError, setSendTargetValueError] = useState(false)
+
+  const [RequestTargetValue, setRequestTargetValue] = useState('')
+  const [RequestAmountError, setRequestAmountError] = useState(false)
+  const [RequestTargetValueError, setRequestTargetValueError] = useState(false)
 
   const [AlertType, setAlertType] = useState('info')
   const [AlertMessage, setAlertMessage] = useState('')
   const [ShowAlert, setShowAlert] = useState(false)
 
   const [SendIsLoading, setSendIsLoading] = useState(false)
+  const [RequestIsLoading, setRequestIsLoading] = useState(false)
 
   const style = {
     position: 'absolute',
@@ -50,6 +57,10 @@ function DashboardContent() {
     borderRadius: 1.5
   }
 
+  const StyledTableCell = styled(TableCell)(({ amount, product }) => ({
+    color: product === 'Amount requested' ? 'orange' : amount < 0 ? 'red' : 'green'
+  }))
+
   const getUserData = async () => {
     VerifyToken().then(async (result) => {
       if (result) {
@@ -58,7 +69,6 @@ function DashboardContent() {
           if (res.status === 200) {
             setAllFriendsData(res.data)
           }
-          // setTimeout(() => setIsProgress(false), 1000);
         }).catch((error) => {
           setIsProgress(false)
           console.log(error)
@@ -66,8 +76,7 @@ function DashboardContent() {
 
         await axios.get('http://localhost:8080/transactions/' + Cookies.get('token')).then((res) => {
           if (res.status === 200) {
-            console.log(res.data)
-            setUserTransactionsData(res.data)
+            setUserTransactionsData(res.data.reverse())
           }
           setTimeout(() => setIsProgress(false), 1000);
         }).catch((error) => {
@@ -79,6 +88,7 @@ function DashboardContent() {
   }
 
   useEffect(() => {
+    setIsProgress(true)
     getUserData()
   }, []);
 
@@ -138,9 +148,6 @@ function DashboardContent() {
       return
     }
 
-    // console.log(SendTargetValue)
-    // console.log(data.get('amount'))
-
     const SendData = {
       token: Cookies.get('token'),
       target: AllFriendsData.find(user => user.firstName + ' ' + user.lastName === SendTargetValue)._id,
@@ -172,6 +179,84 @@ function DashboardContent() {
     }
   }
 
+  const RequestAmountHandler = async (event) => {
+    event.preventDefault()
+    const data = new FormData(event.currentTarget)
+    setRequestIsLoading(true)
+
+    if (data.get('amount') == '') {
+      setRequestTargetValueError(true)
+      setRequestIsLoading(false)
+    }
+    else {
+      setRequestTargetValueError(false)
+    }
+
+    if (!RequestTargetValue) {
+      setRequestAmountError(true)
+      setRequestIsLoading(false)
+    }
+    else {
+      if (!AllFriends.includes(RequestTargetValue)) {
+        setAlertType('error')
+        setAlertMessage("Wrong target.")
+        setShowAlert(true)
+        setRequestAmountError(true)
+        setRequestIsLoading(false)
+        return
+      }
+      else {
+        setRequestAmountError(false)
+      }
+    }
+
+    if (data.get('amount') == '' || !RequestTargetValue) {
+      setAlertType('info')
+      setAlertMessage("Please fill all fields.")
+      setRequestIsLoading(false)
+      setShowAlert(true)
+      return
+    }
+
+    if (data.get('amount') == '0') {
+      setAlertType('error')
+      setAlertMessage("You cannot Request 0 amount.")
+      setRequestIsLoading(false)
+      setShowAlert(true)
+      return
+    }
+
+    const RequestData = {
+      token: Cookies.get('token'),
+      target: AllFriendsData.find(user => user.firstName + ' ' + user.lastName === RequestTargetValue)._id,
+      amount: data.get('amount'),
+    }
+
+    try {
+      const res = await axios.post('http://localhost:8080/dashboard/RequestAmount', RequestData, { withCredentials: true });
+      if (res.status === 200) {
+        setIsProgress(true)
+        setAlertType('success')
+        setAlertMessage(res.data)
+        setShowAlert(true)
+        setRequestIsLoading(false)
+        setOpenRequestModal(false)
+        getUserData()
+      }
+      else {
+        setAlertType('error')
+        setAlertMessage(res.data)
+        setShowAlert(true)
+        setRequestIsLoading(false)
+      }
+    } catch (error) {
+      setAlertType('error')
+      setAlertMessage(error)
+      setShowAlert(true)
+      setRequestIsLoading(false)
+    }
+  }
+
   return (
     <>
       <Grid container spacing={20}>
@@ -198,6 +283,8 @@ function DashboardContent() {
               }
               setAllFriends(Data)
               setOpenSendModal(true)
+              setSendAmountError(false)
+              setSendTargetValueError(false)
             }}
           >
             Send
@@ -205,7 +292,18 @@ function DashboardContent() {
           <Button
             sx={{ px: 3, mx: 1.3 }}
             variant="contained"
-            onClick={() => { setOpenRequestModal(true) }}
+            onClick={() => {
+              let Data = []
+              for (let friend in AllFriendsData) {
+                if (UserData._id != AllFriendsData[friend]._id) {
+                  Data.push(AllFriendsData[friend].firstName + ' ' + AllFriendsData[friend].lastName)
+                }
+              }
+              setAllFriends(Data)
+              setOpenRequestModal(true)
+              setRequestAmountError(false)
+              setRequestTargetValueError(false)
+            }}
           >
             Request
           </Button>
@@ -213,31 +311,116 @@ function DashboardContent() {
           <div style={{ fontSize: 18, marginTop: 8, marginBottom: 8 }}>
             Recent activities
           </div>
+          {
+            UserTransactionsData ?
+              (
+                UserTransactionsData != '' ?
+                  (
+                    <TableContainer sx={{ height: 355 }} component={Paper}>
+                      <Table aria-label="customized table">
+                        <TableBody>
+                          {UserTransactionsData.map((row) => (
+                            <TableRow key={row._id}>
+                              <TableCell component="th" scope="row">
+                                {row.target}
+                              </TableCell>
+                              <StyledTableCell align="center" amount={row.amount} product={row.product}>
+                                {row.amount}
+                              </StyledTableCell>
+                              <TableCell align="right">
+                                {row.date}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  )
+                  :
+                  (
+                    <Paper
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        height: 355,
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      No transactions yet.
+                    </Paper>
+                  )
+              )
+              :
+              (
+                <Paper
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: 355,
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <CircularProgress size={33} />
+                </Paper>
+              )
+          }
 
-          <Paper
-            sx={{
-              p: 2,
-              display: 'flex',
-              flexDirection: 'column',
-              height: 355,
-            }}
-          >
-          </Paper>
         </Grid>
         <Grid item xs={12} md={4} lg={6}>
           <div style={{ fontSize: 18, marginTop: 55, marginBottom: 8 }}>
             Send again
           </div>
-          <Paper
-            sx={{
-              p: 2,
-              display: 'flex',
-              flexDirection: 'column',
-              height: 205,
-            }}
-          >
-
-          </Paper>
+          {
+            AllFriendsData ?
+              (
+                AllFriendsData != '' ?
+                  (
+                    <TableContainer sx={{ height: 205 }} component={Paper}>
+                      <Table aria-label="customized table">
+                        <TableBody>
+                          {AllFriendsData.map((row) => (
+                            <TableRow key={row._id}>
+                              <TableCell align="center" component="th" scope="row">
+                                {row.firstName + ' ' + row.lastName}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  )
+                  :
+                  (
+                    <Paper
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      height: 205,
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    No friends yet.
+                  </Paper>
+                  )
+              )
+              :
+              (
+                <Paper
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: 205,
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <CircularProgress size={33} />
+                </Paper>
+              )
+          }
           <div style={{ fontSize: 18, marginTop: 8, marginBottom: 8 }}>
             Bank and cards
           </div>
@@ -258,7 +441,6 @@ function DashboardContent() {
 
         <Modal
           open={OpenSendModal}
-          // onClose={handleClose}
           aria-labelledby="modal-modal-title"
           aria-describedby="modal-modal-description"
         >
@@ -267,7 +449,6 @@ function DashboardContent() {
               Send Amount
             </Typography>
             <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-              {/* Duis mollis, est non commodo luctus, nisi erat porttitor ligula. */}
             </Typography>
 
             <Autocomplete
@@ -287,7 +468,6 @@ function DashboardContent() {
               renderInput={(params) => <TextField {...params} error={SendAmountError} label="Send to" />}
             />
             <TextField sx={{ my: 1 }} error={SendTargetValueError} type='number' id="outlined-basic" label="Amount" name='amount' variant="outlined" fullWidth size='small' />
-            {/* <Button sx={{ my: 1 }} type='submit' variant="contained">Send</Button> */}
             <LoadingButton
               loading={SendIsLoading}
               type="submit"
@@ -297,6 +477,47 @@ function DashboardContent() {
               Send
             </LoadingButton>
             <Button sx={{ my: 1, mx: 2 }} variant="contained" onClick={() => { setOpenSendModal(false); setSendIsLoading(false) }}>Cancel</Button>
+          </Box>
+        </Modal>
+
+        <Modal
+          open={OpenRequestModal}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+        >
+          <Box component="form" onSubmit={RequestAmountHandler} sx={style} >
+            <Typography id="modal-modal-title" variant="h6" component="h2">
+              Request Amount
+            </Typography>
+            <Typography id="modal-modal-description" sx={{ mt: 2 }}>
+            </Typography>
+
+            <Autocomplete
+              sx={{ my: 1 }}
+              fullWidth
+              size='small'
+              onChange={(event, newValue) => {
+                setRequestTargetValue(newValue);
+              }}
+              onInputChange={(event, newInputValue) => {
+                setRequestTargetValue(newInputValue);
+              }}
+              id="controllable-states-demo"
+              options={AllFriends}
+              name='Requesttarget'
+
+              renderInput={(params) => <TextField {...params} error={RequestAmountError} label="Request from" />}
+            />
+            <TextField sx={{ my: 1 }} error={RequestTargetValueError} type='number' id="outlined-basic" label="Amount" name='amount' variant="outlined" fullWidth size='small' />
+            <LoadingButton
+              loading={RequestIsLoading}
+              type="submit"
+              variant="contained"
+              sx={{ my: 1, px: 3.1 }}
+            >
+              Request
+            </LoadingButton>
+            <Button sx={{ my: 1, mx: 2 }} variant="contained" onClick={() => { setOpenRequestModal(false); setRequestIsLoading(false) }}>Cancel</Button>
           </Box>
         </Modal>
       </Grid>

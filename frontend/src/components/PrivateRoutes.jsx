@@ -16,7 +16,7 @@ const PrivateRoutes = () => {
         axios.get('http://localhost:8080/api/auth/tokenVerification/' + token, { withCredentials: true }).then((res) => {
 
             if (res.status === 200) {
-                console.log(res.data)
+                // console.log(res.data)
                 setIsVerify(true)
                 setIsLoading(true)
             } else {

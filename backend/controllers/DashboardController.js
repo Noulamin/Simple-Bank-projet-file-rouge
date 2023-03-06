@@ -16,8 +16,7 @@ const GetAllUsers = asyncHandler(async (req, res) => {
                 res.status(222).send("Something is wrong.")
             }
         }
-        else
-        {
+        else {
             res.status(222).send("invalid token.")
         }
     })
@@ -27,7 +26,6 @@ const GetAllUsers = asyncHandler(async (req, res) => {
 // Send Amount
 const SendAmount = asyncHandler(async (req, res) => {
 
-    console.log(req.body)
     const { token, target, amount } = req.body
     TokenVerification(token).then(async (data) => {
 
@@ -42,7 +40,6 @@ const SendAmount = asyncHandler(async (req, res) => {
                     _id = target
                     UserModel.findOne({ _id }, (error, user) => {
                         if (user) {
-                            console.log(user.firstName)
                             targetData = user
 
                             if (senderData.balance < amount) {
@@ -50,12 +47,8 @@ const SendAmount = asyncHandler(async (req, res) => {
                             }
                             else {
                                 if (senderData._id != targetData._id) {
-                                    console.log('actuel sender b : ' + senderData.balance + ' ' + senderData.firstName)
-                                    console.log('actuel target b : ' + targetData.balance + ' ' + targetData.firstName)
                                     senderData.balance = parseInt(senderData.balance) - parseInt(amount)
                                     targetData.balance = parseInt(targetData.balance) + parseInt(amount)
-                                    console.log('sender b : ' + senderData.balance)
-                                    console.log('target b : ' + targetData.balance)
                                     updateUserData(senderData._id, senderData)
                                     updateUserData(targetData._id, targetData)
 
@@ -64,6 +57,7 @@ const SendAmount = asyncHandler(async (req, res) => {
                                     const targetTransaction = new TransactionsModel({
                                         id: targetData._id,
                                         target: senderData.firstName + ' ' + senderData.lastName,
+                                        product: 'Amount received',
                                         amount: '+' + amount,
                                         date: getDateAndTime()
                                     })
@@ -72,6 +66,7 @@ const SendAmount = asyncHandler(async (req, res) => {
                                     const senderTransaction = new TransactionsModel({
                                         id: senderData._id,
                                         target: targetData.firstName + ' ' + targetData.lastName,
+                                        product: 'Amount sended',
                                         amount: '-' + amount,
                                         date: getDateAndTime()
                                     })
@@ -81,6 +76,57 @@ const SendAmount = asyncHandler(async (req, res) => {
                                 else {
                                     return res.status(222).send('You cannot send to yourself.')
                                 }
+                            }
+                        }
+                        else {
+                            return res.status(222).send('Target not exist anymore.')
+                        }
+
+                    })
+                }
+                else {
+                    return res.status(222).send('You are not exist anymore.')
+                }
+            })
+        }
+        else {
+            return res.status(222).send('invalid token.')
+        }
+    })
+})
+
+// Request Amount
+const RequestAmount = asyncHandler(async (req, res) => {
+
+    const { token, target, amount } = req.body
+    TokenVerification(token).then(async (data) => {
+
+        if (data) {
+
+            let _id = data.id
+            let senderData
+            let targetData
+            UserModel.findOne({ _id }, (error, sender) => {
+                if (sender) {
+                    senderData = sender
+                    _id = target
+                    UserModel.findOne({ _id }, (error, user) => {
+                        if (user) {
+                            targetData = user
+
+                            if (senderData._id != targetData._id) {
+                                const senderTransaction = new TransactionsModel({
+                                    id: senderData._id,
+                                    target: targetData.firstName + ' ' + targetData.lastName,
+                                    product: 'Amount requested',
+                                    amount: '+' + amount,
+                                    date: getDateAndTime()
+                                })
+                                senderTransaction.save()
+                                return res.status(200).send(amount + '$ has been successfully requested from ' + targetData.firstName + ' ' + targetData.lastName + '.')
+                            }
+                            else {
+                                return res.status(222).send('You cannot request from yourself.')
                             }
                         }
                         else {
@@ -190,4 +236,4 @@ const updateUserData = asyncHandler(async (userId, data) => {
     }
 })
 
-module.exports = { GetAllUsers, SendAmount }
+module.exports = { GetAllUsers, SendAmount, RequestAmount }
