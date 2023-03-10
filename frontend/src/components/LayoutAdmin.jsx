@@ -73,33 +73,22 @@ function LayoutAdmin() {
         setOpen(!open)
     }
 
-    // OneSignal.initialize({
-    //     appId: 'a6b5594d-d49b-4b57-91f2-c0702d31c4ae',
-    //     notifyButton: {
-    //         enable: true,
-    //     },
-    // });
-
     useEffect(() => {
         OneSignal.init({
             appId: "b8ccbd34-20d0-45fe-a7ea-c385ab4d58a3",
-            // safari_web_id: "web.onesignal.auto.5f2b561a-4bc4-4806-b010-c7853696b689",
-            // notifyButton: {
-            //     enable: true,
-            // },
-            // subdomainName: "awdiii",
-            autoPrompt: false
-        });
+            promptOptions: {
+                slidedown: {
+                    enabled: false,
+                    autoPrompt: false,
+                }
+            }
+        })
 
-
-            // OneSignal.setSubscription({
-            //   autoPrompt: false
-            // });
-            
         OneSignal.registerForPushNotifications();
 
         OneSignal.on('notificationDisplay', (event) => {
             console.log('OneSignal notification displayed:', event);
+            
         });
     }, []);
 

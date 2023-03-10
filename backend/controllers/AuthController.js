@@ -10,10 +10,15 @@ const Login = asyncHandler((req, res) => {
     const { email, password } = req.body
     User.findOne({ email }, (error, user) => {
 
-        if (!user || error) {
+        if(error)
+        {
+            return res.status(222).send('Network error.')
+        }
+
+        if (!user) {
             return res.status(222).send('User not found with this email.')
         }
-        // console.log(user)
+
         if (!user.authenticated(password)) {
             return res.status(222).send('Incorrect password.')
         }
@@ -30,15 +35,21 @@ const Register = asyncHandler((req, res) => {
     const { email, password } = req.body
     const data = new User(req.body)
     User.findOne({ email }, (error, user) => {
+
+        if(error)
+        {
+            return res.status(222).send('Network error.')
+        }
+
         if (user) {
-            return res.status(200).send("Email already in use.")
+            return res.status(222).send("Email already in use.")
         }
         else {
             data.hashedPassword = cryptPassword(password)
             data.save((err, user) => {
 
                 if (err) {
-                    return res.status(200).send(err.message)
+                    return res.status(222).send(err.message)
                 }
 
                 const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET)
