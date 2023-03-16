@@ -1,13 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CssBaseline, TextField, FormControlLabel, Checkbox, Link, Grid, Box, Typography, Container, Snackbar } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import axios from 'axios'
+import SimpleImg from '../../images/simple.jpg'
+import './styleIdentify.css'
 
 export default function Login() {
 
   const [IsLoading, setIsLoading] = useState(false)
   const [ShowAlert, setShowAlert] = useState(false)
   const [AlertMessage, setAlertMessage] = useState(false)
+
+  useEffect(() => {
+    document.title = "Login | Simple"
+  },[])
 
   const handleSubmit = async (event) => {
     event.preventDefault()
@@ -54,6 +60,7 @@ export default function Login() {
           alignItems: 'center',
         }}
       >
+        <img src={SimpleImg} className="logoIdentify"/>
         <Typography component="h1" variant="h5">
           Sign in
         </Typography>

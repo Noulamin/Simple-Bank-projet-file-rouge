@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import OneSignal from 'react-onesignal'
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
 import { LinearProgress, Grid, Container, Badge, IconButton, Typography, List, Toolbar, Box, CssBaseline, TextField } from '@mui/material';
 import MuiDrawer from '@mui/material/Drawer';
@@ -10,6 +9,11 @@ import ListItems from './ListItems';
 import logoImg from '../images/logo.png'
 import '../style/dashboard.css'
 import { Outlet } from 'react-router-dom'
+import { initializeApp } from 'firebase/app';
+import { getMessaging, getToken, onMessage } from 'firebase/messaging';
+import { onBackgroundMessage } from "firebase/messaging/sw";
+
+
 
 const drawerWidth = 240;
 
@@ -74,23 +78,44 @@ function LayoutAdmin() {
     }
 
     useEffect(() => {
-        OneSignal.init({
-            appId: "b8ccbd34-20d0-45fe-a7ea-c385ab4d58a3",
-            promptOptions: {
-                slidedown: {
-                    enabled: false,
-                    autoPrompt: false,
+        let firebaseConfig = {
+            messagingSenderId: "881631058788",
+            apiKey: "AIzaSyCJr0ETHYw-3JQFmHTkvOGvjtNFDLFW4EE",
+            authDomain: "simple-bank-f2b85.firebaseapp.com",
+            projectId: "simple-bank-f2b85",
+            storageBucket: "simple-bank-f2b85.appspot.com",
+            messagingSenderId: "881631058788",
+            appId: "1:881631058788:web:52a75769cef281fa753871"
+        };
+
+        initializeApp(firebaseConfig);
+
+        const messaging = getMessaging();
+
+        getToken(messaging, { vapidKey: `BA0gsmo-elEkfm5BQwknV-5RhsShNJOJlUE4YcRuBLZHpM-2cQvy3xZJD-MCQo4I16SOW0alHNGB0m8R9qA35mI` })
+            .then((currentToken) => {
+                if (currentToken) {
+                    console.log('current token for client: ', currentToken);
+                    // Perform any other neccessary action with the token
+                } else {
+                    // Show permission request UI
+                    console.log('No registration token available. Request permission to generate one.');
                 }
+            })
+            .catch((err) => {
+                console.log('An error occurred while retrieving token. ', err);
+            });
+
+        Notification.requestPermission().then((permission) => {
+            if (permission === 'granted') {
+                console.log('Notification permission granted.');
             }
         })
 
-        OneSignal.registerForPushNotifications();
-
-        OneSignal.on('notificationDisplay', (event) => {
-            console.log('OneSignal notification displayed:', event);
-            
-        });
-    }, []);
+        onMessage(messaging, (payload) => {
+            console.log(payload)
+        })
+    }, [])
 
     return (
         <ThemeProvider theme={mdTheme}>
@@ -144,7 +169,9 @@ function LayoutAdmin() {
                     {IsProgress && <LinearProgress />}
                 </AppBar>
                 <Drawer variant="permanent" open={open}>
-                    <img src={logoImg} className="logo" />
+                    <div className='logoContainer'>
+                        <img src={logoImg} className="logo" />
+                    </div>
                     <List component="" sx={{ my: 7 }}>
                         <ListItems />
                     </List>

@@ -1,0 +1,38 @@
+.logo {
+    max-width: 194px;
+    padding: 0px;
+}
+
+.divParent{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+
+.divRight{
+    width: 568px;
+}
+
+.divLeft{
+    margin-top: 91px;
+}
+
+.SimpleBank{
+    padding: 0px;
+    width: 712px;
+    height: 443px;
+}
+
+.Link{
+    text-decoration: none;
+}
+
+.Paragraph{
+    margin: 0px;
+}
+
+.footer{
+    position: absolute;
+    bottom: 30px;
+    width: 100%;
+}

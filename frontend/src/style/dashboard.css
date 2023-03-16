@@ -12,6 +12,12 @@
     padding-bottom: 20px;
 }
 
+.logoContainer{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .gifImg{
     width: 100%;
     height: 110px;

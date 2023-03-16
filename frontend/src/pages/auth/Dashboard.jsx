@@ -18,10 +18,6 @@ function DashboardContent() {
 
   const [IsProgress, setIsProgress] = useOutletContext()
 
-  const check = () => {
-    setIsProgress(true)
-  }
-
   const [OpenSendModal, setOpenSendModal] = useState(false)
   const [OpenRequestModal, setOpenRequestModal] = useState(false)
   const [UserData, setUserData] = useState()
@@ -88,6 +84,7 @@ function DashboardContent() {
   }
 
   useEffect(() => {
+    document.title = "Dashboard | Simple"
     setIsProgress(true)
     getUserData()
   }, []);
@@ -434,7 +431,7 @@ function DashboardContent() {
           >
 
           </Paper>
-          <Button variant="contained" sx={{ my: 2 }} onClick={() => { check() }}>
+          <Button variant="contained" sx={{ my: 2 }} onClick={() => { }}>
             Link a Bank or Card
           </Button>
         </Grid>

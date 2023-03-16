@@ -16,11 +16,16 @@ const Login = asyncHandler((req, res) => {
         }
 
         if (!user) {
-            return res.status(222).send('User not found with this email.')
+            return res.status(222).send('Invalid email or password.')
         }
 
         if (!user.authenticated(password)) {
-            return res.status(222).send('Incorrect password.')
+            return res.status(222).send('Invalid email or password.')
+        }
+
+        if(!user.emailIsVerified === true)
+        {
+            return res.status(222).send('Account not verified yet.')
         }
 
         const token = jwt.sign(

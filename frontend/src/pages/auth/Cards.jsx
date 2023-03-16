@@ -30,7 +30,7 @@ const StyledTableCell = styled(TableCell)(({ amount, product }) => ({
 
 const options = ['Option 1', 'Option 2', 'Option 3', 'Option 4', 'Option 5', 'Option 6'];
 
-function TransactionsContent() {
+function CardsContent() {
 
   const [IsProgress, setIsProgress] = useOutletContext()
 
@@ -69,7 +69,7 @@ function TransactionsContent() {
   }
 
   useEffect(() => {
-    document.title = "Transactions | Simple"
+    document.title = "Cards | Simple"
     setIsProgress(true)
     getUserData()
   }, []);
@@ -78,7 +78,7 @@ function TransactionsContent() {
     <>
       <Grid item >
         <div style={{ fontSize: 26, marginTop: 40, marginBottom: 7 }}>
-          Transactions
+          Cards
         </div>
         {
           UserTransactionsData ?
@@ -147,4 +147,4 @@ function TransactionsContent() {
   )
 }
 
-export default TransactionsContent
+export default CardsContent
