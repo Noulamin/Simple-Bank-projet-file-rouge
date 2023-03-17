@@ -1,18 +1,11 @@
 import * as React from 'react';
 import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import logoImg from '../images/logo.png'
 import SimpleBank from '../images/SimpleBank.png'
 import './style.css'
 
-import Card from '@mui/material/Card';
-import CardActions from '@mui/material/CardActions';
-import CardContent from '@mui/material/CardContent';
-import CardHeader from '@mui/material/CardHeader';
 import CssBaseline from '@mui/material/CssBaseline';
-import Grid from '@mui/material/Grid';
-import StarIcon from '@mui/icons-material/StarBorder';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Link from '@mui/material/Link';
@@ -31,7 +24,7 @@ function HomePage() {
       >
         <Toolbar sx={{ flexWrap: 'wrap' }}>
           <Typography color="inherit" sx={{ flexGrow: 1, mx: 3 }}>
-            <img src={logoImg} className='logoIdentify' />
+            <img src={logoImg} className='homePageLogo' />
           </Typography>
           <Button href="login" variant="outlined" sx={{ mx: 2 }}>
             Login
@@ -56,7 +49,7 @@ function HomePage() {
             <Button href="register" variant="contained" sx={{ mt: 1.5, width: '340px' }} >
               Get Started
             </Button>
-            <p class="Paragraph">Already a customer? <a href="login" className='Link'>Login here</a>.</p>
+            <p className="Paragraph">Already a customer? <a href="login" className='Link'>Login here</a>.</p>
           </div>
           <div className='divRight'>
             <img src={SimpleBank} className='SimpleBank' />

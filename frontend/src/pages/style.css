@@ -3,36 +3,40 @@
     padding: 0px;
 }
 
-.divParent{
+.divParent {
     width: 100%;
     display: flex;
     justify-content: space-between;
 }
 
-.divRight{
+.divRight {
     width: 568px;
 }
 
-.divLeft{
+.divLeft {
     margin-top: 91px;
 }
 
-.SimpleBank{
+.SimpleBank {
     padding: 0px;
     width: 712px;
     height: 443px;
 }
 
-.Link{
+.Link {
     text-decoration: none;
 }
 
-.Paragraph{
+.Paragraph {
     margin: 0px;
 }
 
-.footer{
+.footer {
     position: absolute;
     bottom: 30px;
     width: 100%;
+}
+
+.homePageLogo {
+    max-width: 174px
 }
