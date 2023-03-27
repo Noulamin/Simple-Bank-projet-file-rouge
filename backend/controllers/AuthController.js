@@ -10,8 +10,7 @@ const Login = asyncHandler((req, res) => {
     const { email, password } = req.body
     User.findOne({ email }, (error, user) => {
 
-        if(error)
-        {
+        if (error) {
             return res.status(222).send('Network error.')
         }
 
@@ -23,8 +22,7 @@ const Login = asyncHandler((req, res) => {
             return res.status(222).send('Invalid email or password.')
         }
 
-        if(!user.emailIsVerified === true)
-        {
+        if (!user.emailIsVerified === true) {
             return res.status(222).send('Account not verified yet.')
         }
 
@@ -41,8 +39,7 @@ const Register = asyncHandler((req, res) => {
     const data = new User(req.body)
     User.findOne({ email }, (error, user) => {
 
-        if(error)
-        {
+        if (error) {
             return res.status(222).send('Network error.')
         }
 
@@ -158,8 +155,7 @@ const VerifyResetLinksToken = asyncHandler((req, res) => {
                     }
                 })
             }
-            else
-            {
+            else {
                 res.status(222).send('this link is expired.')
             }
         }
@@ -187,8 +183,7 @@ const ResetPassword = asyncHandler((req, res) => {
                     }
                 })
             }
-            else
-            {
+            else {
                 res.status(222).send('this link is expired.')
             }
         }
@@ -196,6 +191,28 @@ const ResetPassword = asyncHandler((req, res) => {
             res.status(222).send('Invalid token.')
         }
     })
+})
+
+const UpdateUserData = asyncHandler(async (req, res) => {
+
+    const { firstName, lastName, email, password , token } = req.body
+    TokenVerification(token).then(async (data) => {
+        if(data)
+        {
+            updatedData = {
+                firstName: firstName,
+                lastName: lastName,
+                email: email,
+                password: cryptPassword(password)
+            }
+            updateUserData(data.id, updatedData)
+            res.status(200).send('Profile successfully updated.')
+        }
+        else {
+            res.status(222).send('Invalid token.')
+        }
+    })
+
 })
 
 const updateUserData = asyncHandler(async (userId, data) => {
@@ -228,4 +245,4 @@ const cryptPassword = (password) => {
     }
 }
 
-module.exports = { Login, Register, VerifyEmail, VerifyToken, ForgetPassword, VerifyResetLinksToken, ResetPassword, signout }
+module.exports = { Login, Register, VerifyEmail, VerifyToken, ForgetPassword, VerifyResetLinksToken, ResetPassword, UpdateUserData, signout }

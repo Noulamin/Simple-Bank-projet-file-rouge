@@ -85,32 +85,17 @@ function InvoicesContent() {
             (
               UserTransactionsData != '' ?
                 (
-                  <TableContainer sx={{ height: 540 }} component={Paper}>
-                    <Table aria-label="customized table">
-                      <TableHead>
-                        <TableRow>
-                          <StyledTableHead>Target</StyledTableHead>
-                          <StyledTableHead align="center">Product</StyledTableHead>
-                          <StyledTableHead align="center">Amount paid</StyledTableHead>
-                          <StyledTableHead align="center">Operation date</StyledTableHead>
-                          <StyledTableHead align="center">Operation state</StyledTableHead>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {UserTransactionsData.map((row) => (
-                          <TableRow key={row._id}>
-                            <TableCell component="th" scope="row">
-                              {row.target}
-                            </TableCell>
-                            <TableCell align="center">{row.product}</TableCell>
-                            <StyledTableCell align="center" amount={row.amount} product={row.product}>{row.amount}</StyledTableCell>
-                            <TableCell align="center">{row.date}</TableCell>
-                            <TableCell align="center"> <Typography variant="inherit">{row.product === 'Amount requested' ? 'Pending' : 'Completed'}</Typography> </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
+                  <Paper
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: 540,
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                Not available yet, Check back soon.
+              </Paper>
                 )
                 :
                 (

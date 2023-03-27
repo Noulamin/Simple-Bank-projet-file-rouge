@@ -260,12 +260,12 @@ function DashboardContent() {
       <Grid container spacing={20}>
         <Grid item xs={12} md={4} lg={6}>
           <div style={{ fontSize: 26, marginTop: 9 }}>
-            Welcome Back, {UserData && UserData.firstName}
+            Welcome Back, {UserData ? UserData.firstName : 'Mr ...'}
           </div>
           <div className="img_container">
             <img className="gifImg" src={gifImg} />
             <p className="your">Your balance</p>
-            <p className="balance"><sup>$</sup>{UserData && UserData.balance}</p>
+            <p className="balance"><sup>$</sup>{UserData ? UserData.balance : '...'}</p>
           </div>
 
           <Button
@@ -364,7 +364,6 @@ function DashboardContent() {
                 </Paper>
               )
           }
-
         </Grid>
         <Grid item xs={12} md={4} lg={6}>
           <div style={{ fontSize: 18, marginTop: 55, marginBottom: 8 }}>
@@ -428,9 +427,12 @@ function DashboardContent() {
               display: 'flex',
               flexDirection: 'column',
               height: 205,
+              justifyContent: 'center',
+              alignItems: 'center'
             }}
           >
-
+            Not available yet,
+            Check back soon.
           </Paper>
           <Button variant="contained" sx={{ my: 2 }} onClick={() => { }}>
             Link a Bank or Card
