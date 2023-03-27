@@ -60,7 +60,6 @@ function DashboardContent() {
   const getUserData = async () => {
     VerifyToken().then(async (result) => {
       if (result) {
-        setUserData(result)
         await axios.get('http://localhost:8080/dashboard/' + Cookies.get('token')).then((res) => {
           if (res.status === 200) {
             setAllFriendsData(res.data)
@@ -79,6 +78,8 @@ function DashboardContent() {
           setIsProgress(false)
           console.log(error)
         })
+        setUserData(result)
+        setIsProgress(false)
       }
     })
   }
