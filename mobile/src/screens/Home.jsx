@@ -1,6 +1,6 @@
-import { StatusBar } from "expo-status-bar";
 import notification_img from "../../public/images/notification.png";
 import menu_img from "../../public/images/menu.png";
+import Gif from "../../public/images/gif.gif";
 import {
   StyleSheet,
   Text,
@@ -12,20 +12,16 @@ import {
   DrawerLayoutAndroid,
   TextInput,
   TouchableOpacity,
+  Dimensions,
+  ImageBackground,
+  FlatList
 } from "react-native";
-// import Favirets from "../components/interface/Favorites"
 import { useState, useRef } from "react";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-// import Pharmaciera from "./interface/Pharmacier";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-// import Map from "./interface/Map";
 
 export default function Home() {
   const [refreshing, setRefreshing] = useState(false);
   const drawerLeft = useRef(null);
   const drawerRight = useRef(null);
-
-  const Tab = createBottomTabNavigator();
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -57,19 +53,42 @@ export default function Home() {
 
   const left_drawer = () => {
     drawerLeft.current.openDrawer();
-  };
+  }
 
   const right_drawer = () => {
     drawerRight.current.openDrawer();
-  };
-
-  function Favourites() {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Favirets/>
-      </View>
-    );
   }
+
+  const InputTextOnChange = (Value) => {
+    // SetShowLyrics(false)
+    // setShowedLyrics(false)
+    // if (Value === '') {
+    //     setShowFirstView(true)
+    //     setSearchedSongs(null)
+    //     return
+    // }
+    // else {
+    //     SetIsSearching(false)
+    //     setShowFirstView(false)
+    // }
+    // clearTimeout(typingTimeout)
+    // typingTimeout = setTimeout(() => {
+    //     console.log(Value)
+    //     SearchForSongs(Value)
+    // }, 2000)
+  }
+
+  const myDataArray = [
+    { id: '1', title: 'Item 1', description: 'This is the first item' },
+    { id: '2', title: 'Item 2', description: 'This is the second item' },
+    { id: '3', title: 'Item 3', description: 'This is the third item' },
+    { id: '4', title: 'Item 4', description: 'This is the fourth item' },
+    { id: '5', title: 'Item 5', description: 'This is the fifth item' }, { id: '1', title: 'Item 1', description: 'This is the first item' },
+    { id: '2', title: 'Item 2', description: 'This is the second item' },
+    { id: '3', title: 'Item 3', description: 'This is the third item' },
+    { id: '4', title: 'Item 4', description: 'This is the fourth item' },
+    { id: '5', title: 'Item 5', description: 'This is the fifth item' },
+  ];
 
   return (
     <>
@@ -87,87 +106,87 @@ export default function Home() {
           drawerWidth={300}
           renderNavigationView={navigationViewRight}
         >
-          <View style={styles.color}>
-            <ScrollView
-              refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-              }
-              style={styles.reload}
-            >
-              <View style={styles.header}>
-                <TouchableOpacity
-                  style={styles.Home_button}
-                  onPress={left_drawer}
-                >
-                  <Image source={menu_img} style={styles.menu_img} />
-                  <Text style={styles.Home_text}>Home</Text>
-                </TouchableOpacity>
+          <ScrollView
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+            style={styles.ScrollView}
+          >
+            <View style={styles.header}>
+              <TouchableOpacity
+                style={styles.Home_button}
+                onPress={left_drawer}
+              >
+                <Image source={menu_img} style={styles.menu_img} />
+              </TouchableOpacity>
+                <Text style={styles.Home_text}>SIMPLE BANK</Text>
 
-                <TouchableOpacity onPress={right_drawer}>
-                  <Image
-                    source={notification_img}
-                    style={styles.notification_img}
-                  />
+              <TouchableOpacity onPress={right_drawer}>
+                <Image
+                  source={notification_img}
+                  style={styles.notification_img}
+                />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.ViewContainer}>
+              <TextInput
+                style={styles.input}
+                placeholder="Search"
+                onChangeText={InputTextOnChange}
+              />
+
+              <ImageBackground
+                source={Gif}
+                style={styles.AmountImg}
+              >
+                <Text style={styles.BalanceText}>Your balance</Text>
+                <Text style={styles.AmountText}>$238</Text>
+              </ImageBackground>
+
+              <View style={styles.ButtonContainer}>
+                <TouchableOpacity
+                  style={styles.SendButton}
+                // onPress={left_drawer}
+                >
+                  <Text style={styles.ButtonText}>
+                    SEND
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.RequestButton}
+                // onPress={left_drawer}
+                >
+                  <Text style={styles.ButtonText}>
+                    REQUEST
+                  </Text>
                 </TouchableOpacity>
               </View>
 
-              {/* <SearchBar /> */}
-            </ScrollView>
+              <View style={styles.RecentTextContainer}>
+                <Text style={styles.activitiesLabel}>
+                  Recent activities
+                </Text>
+              </View>
+            </View>
+          </ScrollView>
+          <View style={styles.ViewContainerEnd}>
+            <View style={styles.activitiesContainer}>
+              <FlatList
+                data={myDataArray}
+                renderItem={({ item }) => (
+                  <View>
+                    <Text>{item.title}</Text>
+                    <Text>{item.description}</Text>
+                  </View>
+                )}
+              />
+            </View>
           </View>
-          {/* <Tab.Navigator screenOptions={{ headerShown: false }}>
-            <Tab.Screen
-              name="Pharmacys"
-              component={Pharmaciera}
-              options={{
-                tabBarLabel: "",
-                tabBarIcon: ({ focused }) => (
-                  <>
-                    <Image style={{ height: 14 }} />
-                    <Icon
-                      name="home"
-                      size={30}
-                      style={focused ? styles.focused : styles.TextButton}
-                    />
-                  </>
-                ),
-              }}
-            />
-
-            <Tab.Screen
-              name="Favourites"
-              component={Favourites}
-              options={{
-                tabBarLabel: "",
-                tabBarIcon: ({ focused }) => (
-                  <>
-                    <Image style={{ height: 14 }} />
-                    <Text style={focused ? styles.focused : styles.TextButton}>
-                      <Favorite name="favorite" size={30} />
-                    </Text>
-                  </>
-                ),
-              }}
-            />
-             <Tab.Screen
-              name="map"
-              component={Map}
-              options={{
-                tabBarLabel: "",
-                tabBarIcon: ({ focused }) => (
-                  <>
-                    <Image style={{ height: 14 }} />
-                    <Text style={focused ? styles.focused : styles.TextButton}>
-                      <Favorite name="map" size={30} />
-                    </Text>
-                  </>
-                ),
-              }}
-            />
-          </Tab.Navigator> */}
         </DrawerLayoutAndroid>
       </DrawerLayoutAndroid>
     </>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -179,16 +198,15 @@ const styles = StyleSheet.create({
   },
   input: {
     marginTop: 10,
-    margin: 27,
-    height: 48,
+    width: Dimensions.get('window').width - 53,
+    height: 47,
     borderWidth: 1,
-    borderRadius: 34,
+    borderRadius: 5,
     padding: 10,
     paddingLeft: 18,
-    fontSize: 18,
+    fontSize: 18
   },
   header: {
-    marginTop: 58,
     marginBottom: 12,
     margin: 21,
     flexDirection: "row",
@@ -206,9 +224,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   Home_text: {
-    fontSize: 21,
+    fontSize: 18,
     fontWeight: "bold",
     marginLeft: 4,
+    color: 'black'
   },
   TextButton: {
     fontWeight: "bold",
@@ -219,4 +238,77 @@ const styles = StyleSheet.create({
   focused: {
     color: "#87E1C7",
   },
-});
+  ViewContainer: {
+    alignItems: 'center',
+    backgroundColor: 'yellow'
+  },
+  ViewContainerEnd: {
+    alignItems: 'center',
+    backgroundColor: 'red'
+
+  },
+  AmountImg: {
+    height: 120,
+    width: Dimensions.get('window').width - 53,
+    marginTop: 20,
+    borderRadius: 6,
+    overflow: 'hidden'
+  },
+  BalanceText: {
+    color: 'white',
+    marginTop: 23,
+    marginLeft: 30,
+    fontSize: 15
+  },
+  AmountText: {
+    color: 'white',
+    marginLeft: 80,
+    fontSize: 27,
+    marginTop: 10
+  },
+  ButtonContainer: {
+    flex: 1,
+    marginTop: 6,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: Dimensions.get('window').width - 53,
+  },
+  ButtonText: {
+    color: 'white',
+    fontSize: 15
+  },
+  SendButton: {
+    width: Dimensions.get('window').width - 270,
+    height: 45,
+    backgroundColor: 'black',
+    borderRadius: 7,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  RequestButton: {
+    width: Dimensions.get('window').width - 270,
+    height: 45,
+    backgroundColor: 'black',
+    borderRadius: 7,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  RecentTextContainer: {
+    width: Dimensions.get('window').width - 53,
+  },
+  activitiesLabel: {
+    color: 'black',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginTop: 4
+  },
+  activitiesContainer: {
+    width: Dimensions.get('window').width - 53,
+    height: Dimensions.get('window').height - 400,
+    backgroundColor: 'blue'
+  },
+  ScrollView: {
+    backgroundColor: 'green',
+    margin: 0
+  }
+})
