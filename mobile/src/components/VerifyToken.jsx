@@ -1,11 +1,8 @@
 import axios from 'axios'
-import Cookies from 'js-cookie';
-
 
 const VerifyToken = () => {
-    const token = Cookies.get('token')
     return new Promise((result) => {
-        axios.get('http://localhost:8080/api/auth/tokenVerification/' + token, { withCredentials: true }).then((res) => {
+        axios.get('http://localhost:8080/api/auth/tokenVerification/' + 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0MTljMTk4YmUxM2U5ZTE0YWU5ODQ0OSIsImlhdCI6MTY4MDAwMDM1NX0.IHeYJILgD3uuux2aSvrZtw0B5OIY0L02d7tzsqqWlRw', { withCredentials: true }).then((res) => {
 
             if (res.status === 200) {
                 return result(res.data)

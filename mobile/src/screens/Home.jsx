@@ -16,12 +16,17 @@ import {
   ImageBackground,
   FlatList
 } from "react-native";
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react"
+import VerifyToken from '../components/VerifyToken'
+
+import axios from 'axios'
 
 export default function Home() {
-  const [refreshing, setRefreshing] = useState(false);
-  const drawerLeft = useRef(null);
-  const drawerRight = useRef(null);
+  const drawerLeft = useRef(null)
+  const drawerRight = useRef(null)
+  const [refreshing, setRefreshing] = useState(false)
+  const [UserTransactionsData, setUserTransactionsData] = useState()
+
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -79,16 +84,28 @@ export default function Home() {
   }
 
   const myDataArray = [
-    { id: '1', title: 'Item 1', description: 'This is the first item' },
-    { id: '2', title: 'Item 2', description: 'This is the second item' },
-    { id: '3', title: 'Item 3', description: 'This is the third item' },
-    { id: '4', title: 'Item 4', description: 'This is the fourth item' },
-    { id: '5', title: 'Item 5', description: 'This is the fifth item' }, { id: '1', title: 'Item 1', description: 'This is the first item' },
-    { id: '2', title: 'Item 2', description: 'This is the second item' },
-    { id: '3', title: 'Item 3', description: 'This is the third item' },
-    { id: '4', title: 'Item 4', description: 'This is the fourth item' },
-    { id: '5', title: 'Item 5', description: 'This is the fifth item' },
-  ];
+    { name: '1', amount: 'Item 1', date: 'first item' },
+    { name: '2', amount: 'Item 2', date: 'second item' },
+    { name: '3', amount: 'Item 3', date: 'third item' },
+    { name: '4', amount: 'Item 4', date: 'fourth item' },
+    { name: '5', amount: 'Item 5', date: 'fifth item' },
+  ]
+
+  const getUserData = async () => {
+
+    await axios.get('http://localhost:8080/transactions/' + Cookies.get('token')).then((res) => {
+      if (res.status === 200) {
+        setUserTransactionsData(res.data.reverse())
+      }
+    }
+    )
+  }
+
+  useEffect(() => {
+    // setIsProgress(true)
+    // getUserData()
+    getUserData()
+  }, []);
 
   return (
     <>
@@ -106,12 +123,16 @@ export default function Home() {
           drawerWidth={300}
           renderNavigationView={navigationViewRight}
         >
+          <View>
+
+          </View>
           <ScrollView
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
             style={styles.ScrollView}
           >
+
             <View style={styles.header}>
               <TouchableOpacity
                 style={styles.Home_button}
@@ -119,7 +140,7 @@ export default function Home() {
               >
                 <Image source={menu_img} style={styles.menu_img} />
               </TouchableOpacity>
-                <Text style={styles.Home_text}>SIMPLE BANK</Text>
+              <Text style={styles.Home_text}>SIMPLE BANK</Text>
 
               <TouchableOpacity onPress={right_drawer}>
                 <Image
@@ -169,20 +190,33 @@ export default function Home() {
                 </Text>
               </View>
             </View>
-          </ScrollView>
-          <View style={styles.ViewContainerEnd}>
-            <View style={styles.activitiesContainer}>
-              <FlatList
-                data={myDataArray}
-                renderItem={({ item }) => (
-                  <View>
-                    <Text>{item.title}</Text>
-                    <Text>{item.description}</Text>
-                  </View>
-                )}
-              />
+            <View style={styles.ViewContainerEnd}>
+              <View style={styles.activitiesContainer} >
+                {
+                  UserTransactionsData ?
+                    (
+                      <FlatList
+                        data={myDataArray}
+                        renderItem={({ item }) => (
+                          <View style={styles.itemContainer}>
+                            <Text>{item.name}</Text>
+                            <Text>{item.amount}</Text>
+                            <Text>{item.date}</Text>
+                          </View>
+                        )}
+                      />
+                    )
+                    :
+                    (
+                      <Text>
+                        No data.
+                      </Text>
+                    )
+                }
+
+              </View>
             </View>
-          </View>
+          </ScrollView>
         </DrawerLayoutAndroid>
       </DrawerLayoutAndroid>
     </>
@@ -240,11 +274,12 @@ const styles = StyleSheet.create({
   },
   ViewContainer: {
     alignItems: 'center',
-    backgroundColor: 'yellow'
+    // backgroundColor: 'yellow',
+    // marginTop: 34,
   },
   ViewContainerEnd: {
     alignItems: 'center',
-    backgroundColor: 'red'
+    // backgroundColor: 'red'
 
   },
   AmountImg: {
@@ -295,6 +330,7 @@ const styles = StyleSheet.create({
   },
   RecentTextContainer: {
     width: Dimensions.get('window').width - 53,
+    marginTop: 5
   },
   activitiesLabel: {
     color: 'black',
@@ -304,11 +340,22 @@ const styles = StyleSheet.create({
   },
   activitiesContainer: {
     width: Dimensions.get('window').width - 53,
-    height: Dimensions.get('window').height - 400,
-    backgroundColor: 'blue'
+    height: Dimensions.get('window').height - 405,
+    // backgroundColor: 'blue',
+    borderRadius: 5,
+    marginTop: 9,
+    borderWidth: 1,
+    borderColor: 'black',
   },
   ScrollView: {
-    backgroundColor: 'green',
-    margin: 0
+    // backgroundColor: 'green',
+    // height: 300
+  },
+  itemContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderBottomWidth: 1,
+    padding: 12,
   }
 })
