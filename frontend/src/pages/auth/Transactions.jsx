@@ -28,8 +28,6 @@ const StyledTableCell = styled(TableCell)(({ amount, product }) => ({
   color: product === 'Amount requested' ? 'orange' : amount < 0 ? 'red' : 'green'
 }));
 
-const options = ['Option 1', 'Option 2', 'Option 3', 'Option 4', 'Option 5', 'Option 6'];
-
 function TransactionsContent() {
 
   const [IsProgress, setIsProgress] = useOutletContext()

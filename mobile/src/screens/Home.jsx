@@ -15,10 +15,14 @@ import {
   Dimensions,
   ImageBackground,
   FlatList,
-  VirtualizedList
+  ToastAndroid,
 } from "react-native";
 import { useState, useEffect, useRef } from "react"
 import VerifyToken from '../components/VerifyToken'
+import { Dialog } from 'react-native-simple-dialogs';
+import { SelectList } from 'react-native-dropdown-select-list'
+
+
 
 import axios from 'axios'
 
@@ -28,13 +32,23 @@ export default function Home() {
   const [refreshing, setRefreshing] = useState(false)
   const [UserTransactionsData, setUserTransactionsData] = useState()
   const [UserData, setUserData] = useState()
+  const [AllFriendsData, setAllFriendsData] = useState()
+  const [AllFriends, setAllFriends] = useState([''])
+
+
+  const [SendmodalVisible, setSendModalVisible] = useState(false)
+
+
+  const [SendAmount, setSendAmount] = useState('')
+  const [SendTarget, setSendTarget] = useState('')
+  const [IsSendDisabled, setIsSendDisabled] = useState(false)
 
 
   const onRefresh = () => {
-    setRefreshing(true);
-
+    setRefreshing(true)
+    getUserData()
     setTimeout(() => {
-      setRefreshing(false);
+      setRefreshing(false)
     }, 2000);
   };
 
@@ -85,35 +99,94 @@ export default function Home() {
     // }, 2000)
   }
 
-  const myDataArray = [
-    { name: '1', amount: 'Item 1', date: 'first item' },
-    { name: '2', amount: 'Item 2', date: 'second item' },
-    { name: '3', amount: 'Item 3', date: 'third item' },
-    { name: '4', amount: 'Item 4', date: 'fourth item' },
-    { name: '5', amount: 'Item 5', date: 'fifth item' },
-  ]
-
   const getUserData = async () => {
+
     VerifyToken().then(async (data) => {
       if (data) {
         setUserData(data)
-        await axios.get('http://172.16.9.172:8080/transactions/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0MTljMTk4YmUxM2U5ZTE0YWU5ODQ0OSIsImlhdCI6MTY4MDAwMDM1NX0.IHeYJILgD3uuux2aSvrZtw0B5OIY0L02d7tzsqqWlRw').then((res) => {
+
+        await axios.get('http://172.16.9.172:8080/dashboard/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0MTljMTk4YmUxM2U5ZTE0YWU5ODQ0OSIsImlhdCI6MTY4MDAwMDM1NX0.IHeYJILgD3uuux2aSvrZtw0B5OIY0L02d7tzsqqWlRw').then((res) => {
           if (res.status === 200) {
-            setUserTransactionsData(res.data.reverse())
+            setAllFriendsData(res.data)
           }
-          // setTimeout(() => setIsProgress(false), 1000);
         }).catch((error) => {
           // setIsProgress(false)
+          console.log(error)
+        })
+
+        await axios.get('http://172.16.9.172:8080/transactions/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0MTljMTk4YmUxM2U5ZTE0YWU5ODQ0OSIsImlhdCI6MTY4MDAwMDM1NX0.IHeYJILgD3uuux2aSvrZtw0B5OIY0L02d7tzsqqWlRw').then((res) => {
+          if (res.status === 200) {
+            let data = []
+            res.data.map((row) => (
+              data.push({
+                target: row.target,
+                product: row.product,
+                amount: row.amount,
+                date: row.date,
+              })
+            ))
+            setUserTransactionsData(data.reverse())
+          }
+        }).catch((error) => {
           console.log(error)
         })
       }
     })
   }
 
+  const SendAmountHandler = async () => {
+    setIsSendDisabled(true)
+    console.log(SendAmount, SendTarget)
+
+    if (SendAmount == '' || SendTarget == '') {
+      ToastAndroid.show('Please fill all fields.', ToastAndroid.SHORT)
+      setIsSendDisabled(false)
+      return
+    }
+
+    if (SendAmount == '0') {
+      ToastAndroid.show('You cannot send 0 amount.', ToastAndroid.SHORT)
+      setIsSendDisabled(false)
+      return
+    }
+
+    if (UserData.balance < SendAmount) {
+      ToastAndroid.show('insufficient balance.', ToastAndroid.SHORT)
+      setIsSendDisabled(false)
+      return
+    }
+
+    const SendData = {
+      token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0MTljMTk4YmUxM2U5ZTE0YWU5ODQ0OSIsImlhdCI6MTY4MDAwMDM1NX0.IHeYJILgD3uuux2aSvrZtw0B5OIY0L02d7tzsqqWlRw',
+      target: AllFriendsData.find(user => user.firstName + ' ' + user.lastName === SendTarget)._id,
+      amount: SendAmount,
+    }
+
+    try {
+      const res = await axios.post('http://172.16.9.172:8080/dashboard/SendAmount', SendData, { withCredentials: true });
+      if (res.status === 200) {
+        setIsSendDisabled(false)
+        ToastAndroid.show(res.data, ToastAndroid.SHORT)
+        setSendModalVisible(false)
+        getUserData()
+      }
+      else {
+        setIsSendDisabled(false)
+        ToastAndroid.show(res.data, ToastAndroid.SHORT)
+        setSendModalVisible(false)
+        getUserData()
+      }
+    } catch (error) {
+      setIsSendDisabled(false)
+      ToastAndroid.show(error, ToastAndroid.SHORT)
+      setSendModalVisible(false)
+    }
+  }
+
+
   useEffect(() => {
     // setIsProgress(true)
     getUserData()
-
   }, []);
 
   return (
@@ -139,7 +212,6 @@ export default function Home() {
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
-            style={styles.ScrollView}
           >
 
             <View style={styles.header}>
@@ -165,7 +237,9 @@ export default function Home() {
                 placeholder="Search"
                 onChangeText={InputTextOnChange}
               />
-
+              <Text style={styles.userNameText}>
+                Welcome back, {UserData? UserData.firstName : 'Mr ...'}
+              </Text>
               <ImageBackground
                 source={Gif}
                 style={styles.AmountImg}
@@ -177,7 +251,18 @@ export default function Home() {
               <View style={styles.ButtonContainer}>
                 <TouchableOpacity
                   style={styles.SendButton}
-                // onPress={left_drawer}
+                  onPress={() => {
+                    setSendAmount('')
+                    setSendTarget('')
+                    let Data = []
+                    for (let friend in AllFriendsData) {
+                      if (UserData._id != AllFriendsData[friend]._id) {
+                        Data.push(AllFriendsData[friend].firstName + ' ' + AllFriendsData[friend].lastName)
+                      }
+                    }
+                    setAllFriends(Data)
+                    setSendModalVisible(true)
+                  }}
                 >
                   <Text style={styles.ButtonText}>
                     SEND
@@ -204,7 +289,17 @@ export default function Home() {
                 {
                   UserTransactionsData ?
                     (
-                      // <FlatList
+                      <FlatList
+                        data={UserTransactionsData}
+                        renderItem={({ item }) => (
+                          <View style={styles.itemContainer}>
+                            <Text style={{ color: 'black' }}>{item.target}</Text>
+                            {item.product === 'Amount requested' ? <Text style={{ color: 'orange' }}>{item.amount}</Text> : item.amount > 0 ? <Text style={{ color: 'green' }}>{item.amount}</Text> : <Text style={{ color: 'red' }}>{item.amount}</Text>}
+                            <Text style={{ color: 'black' }}>{item.date}</Text>
+                          </View>
+                        )}
+                      />
+                      // <VirtualizedList
                       //   data={myDataArray}
                       //   renderItem={({ item }) => (
                       //     <View style={styles.itemContainer}>
@@ -213,23 +308,12 @@ export default function Home() {
                       //       <Text>{item.date}</Text>
                       //     </View>
                       //   )}
-
+                      //   getItemCount={() => { myDataArray.length }}
+                      //   initialNumToRender={10}
+                      //   windowSize={10}
+                      //   maxToRenderPerBatch={10}
+                      //   updateCellsBatchingPeriod={50}
                       // />
-                      <VirtualizedList
-                        data={myDataArray}
-                        renderItem={({ item }) => (
-                          <View style={styles.itemContainer}>
-                            <Text>{item.name}</Text>
-                            <Text>{item.amount}</Text>
-                            <Text>{item.date}</Text>
-                          </View>
-                        )}
-                        getItemCount={() => { myDataArray.length }}
-                        initialNumToRender={10}
-                        windowSize={10}
-                        maxToRenderPerBatch={10}
-                        updateCellsBatchingPeriod={50}
-                      />
                     )
                     :
                     (
@@ -244,6 +328,41 @@ export default function Home() {
           </ScrollView>
         </DrawerLayoutAndroid>
       </DrawerLayoutAndroid>
+
+      <Dialog
+        visible={SendmodalVisible}
+        title="Send Amount to" >
+        <View>
+          <SelectList
+            setSelected={(Value) => setSendTarget(Value)}
+            data={AllFriends}
+            save="value"
+          />
+          <TextInput
+            style={styles.ModalInput}
+            placeholder="Amount"
+            keyboardType='number-pad'
+            onChangeText={(Value) => { setSendAmount(Value) }}
+          />
+          <View style={{ marginTop: 8 }}>
+            <Button
+              title="Send"
+              disabled={IsSendDisabled}
+              color="black"
+              onPress={() => { SendAmountHandler() }}
+            />
+          </View>
+
+          <View style={{ marginTop: 8 }}>
+            <Button
+              title="Cancel"
+              disabled={IsSendDisabled}
+              color="black"
+              onPress={() => setSendModalVisible(false)}
+            />
+          </View>
+        </View>
+      </Dialog>
     </>
   )
 }
@@ -310,7 +429,6 @@ const styles = StyleSheet.create({
   AmountImg: {
     height: 120,
     width: Dimensions.get('window').width - 53,
-    marginTop: 20,
     borderRadius: 6,
     overflow: 'hidden'
   },
@@ -365,16 +483,12 @@ const styles = StyleSheet.create({
   },
   activitiesContainer: {
     width: Dimensions.get('window').width - 53,
-    height: Dimensions.get('window').height - 405,
+    height: Dimensions.get('window').height - 425,
     // backgroundColor: 'blue',
     borderRadius: 5,
     marginTop: 9,
     borderWidth: 1,
     borderColor: 'black',
-  },
-  ScrollView: {
-    // backgroundColor: 'green',
-    // height: 300
   },
   itemContainer: {
     flex: 1,
@@ -382,5 +496,30 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     borderBottomWidth: 1,
     padding: 12,
+  },
+  ModalInput: {
+    borderWidth: 1,
+    borderColor: 'gray',
+    borderRadius: 10,
+    marginTop: 8,
+    height: 49,
+    paddingLeft: 22
+  },
+  ModalButtonContainer: {
+    flex: 1,
+    marginTop: 6,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    // width: Dimensions.get('window').width - 53,
+  },
+  modalButtons: {
+    margin: 6
+  },
+  userNameText: {
+    fontWeight: 'bold',
+    color: 'black',
+    fontSize: 22,
+    margin: 5,
+    fontFamily: 'Cochin'
   }
 })
