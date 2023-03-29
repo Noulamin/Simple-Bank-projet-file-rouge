@@ -16,6 +16,7 @@ import {
   ImageBackground,
   FlatList,
   ToastAndroid,
+  ActivityIndicator
 } from "react-native";
 import { useState, useEffect, useRef } from "react"
 import VerifyToken from '../components/VerifyToken'
@@ -110,7 +111,6 @@ export default function Home() {
             setAllFriendsData(res.data)
           }
         }).catch((error) => {
-          // setIsProgress(false)
           console.log(error)
         })
 
@@ -136,7 +136,6 @@ export default function Home() {
 
   const SendAmountHandler = async () => {
     setIsSendDisabled(true)
-    console.log(SendAmount, SendTarget)
 
     if (SendAmount == '' || SendTarget == '') {
       ToastAndroid.show('Please fill all fields.', ToastAndroid.SHORT)
@@ -238,7 +237,7 @@ export default function Home() {
                 onChangeText={InputTextOnChange}
               />
               <Text style={styles.userNameText}>
-                Welcome back, {UserData? UserData.firstName : 'Mr ...'}
+                Welcome back, {UserData ? UserData.firstName : 'Mr ...'}
               </Text>
               <ImageBackground
                 source={Gif}
@@ -299,21 +298,6 @@ export default function Home() {
                           </View>
                         )}
                       />
-                      // <VirtualizedList
-                      //   data={myDataArray}
-                      //   renderItem={({ item }) => (
-                      //     <View style={styles.itemContainer}>
-                      //       <Text>{item.name}</Text>
-                      //       <Text>{item.amount}</Text>
-                      //       <Text>{item.date}</Text>
-                      //     </View>
-                      //   )}
-                      //   getItemCount={() => { myDataArray.length }}
-                      //   initialNumToRender={10}
-                      //   windowSize={10}
-                      //   maxToRenderPerBatch={10}
-                      //   updateCellsBatchingPeriod={50}
-                      // />
                     )
                     :
                     (
@@ -344,23 +328,57 @@ export default function Home() {
             keyboardType='number-pad'
             onChangeText={(Value) => { setSendAmount(Value) }}
           />
-          <View style={{ marginTop: 8 }}>
-            <Button
-              title="Send"
+          <View style={styles.ButtonsContainer}>
+            <TouchableOpacity
               disabled={IsSendDisabled}
-              color="black"
               onPress={() => { SendAmountHandler() }}
-            />
+              style={{
+                backgroundColor: IsSendDisabled ? '#E0E0E0' : 'black', height: 49,
+                width: '100%',
+                borderRadius: 5,
+                marginTop: 9,
+                alignItems: "center",
+                justifyContent: "center",
+              }}>
+              {
+                IsSendDisabled ?
+                  (
+                    <ActivityIndicator size="small" color="#AEAEAE" />
+                  )
+                  :
+                  (
+                    <Text style={styles.HandleButtonText}>
+                      Send
+                    </Text>
+                  )
+              }
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              disabled={IsSendDisabled}
+              onPress={() => { SendAmountHandler() }}
+              style={{
+                backgroundColor: IsSendDisabled ? '#E0E0E0' : 'black', height: 49,
+                width: '100%',
+                borderRadius: 5,
+                marginTop: 9,
+                alignItems: "center",
+                justifyContent: "center",
+              }}>
+              <Text style={styles.HandleButtonText}>
+                Cancel
+              </Text>
+            </TouchableOpacity>
           </View>
 
-          <View style={{ marginTop: 8 }}>
+          {/* <View style={{ marginTop: 8 }}>
             <Button
               title="Cancel"
               disabled={IsSendDisabled}
               color="black"
               onPress={() => setSendModalVisible(false)}
             />
-          </View>
+          </View> */}
         </View>
       </Dialog>
     </>
@@ -406,9 +424,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginLeft: 4,
     color: 'black'
-  },
-  TextButton: {
-    fontWeight: "bold",
   },
   color: {
     backgroundColor: "white",
@@ -521,5 +536,9 @@ const styles = StyleSheet.create({
     fontSize: 22,
     margin: 5,
     fontFamily: 'Cochin'
-  }
+  },
+  HandleButtonText: {
+    color: 'white',
+    fontSize: 17
+  },
 })
