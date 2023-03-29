@@ -14,7 +14,8 @@ import {
   TouchableOpacity,
   Dimensions,
   ImageBackground,
-  FlatList
+  FlatList,
+  VirtualizedList
 } from "react-native";
 import { useState, useEffect, useRef } from "react"
 import VerifyToken from '../components/VerifyToken'
@@ -26,6 +27,7 @@ export default function Home() {
   const drawerRight = useRef(null)
   const [refreshing, setRefreshing] = useState(false)
   const [UserTransactionsData, setUserTransactionsData] = useState()
+  const [UserData, setUserData] = useState()
 
 
   const onRefresh = () => {
@@ -92,19 +94,26 @@ export default function Home() {
   ]
 
   const getUserData = async () => {
-
-    await axios.get('http://localhost:8080/transactions/' + Cookies.get('token')).then((res) => {
-      if (res.status === 200) {
-        setUserTransactionsData(res.data.reverse())
+    VerifyToken().then(async (data) => {
+      if (data) {
+        setUserData(data)
+        await axios.get('http://172.16.9.172:8080/transactions/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0MTljMTk4YmUxM2U5ZTE0YWU5ODQ0OSIsImlhdCI6MTY4MDAwMDM1NX0.IHeYJILgD3uuux2aSvrZtw0B5OIY0L02d7tzsqqWlRw').then((res) => {
+          if (res.status === 200) {
+            setUserTransactionsData(res.data.reverse())
+          }
+          // setTimeout(() => setIsProgress(false), 1000);
+        }).catch((error) => {
+          // setIsProgress(false)
+          console.log(error)
+        })
       }
-    }
-    )
+    })
   }
 
   useEffect(() => {
     // setIsProgress(true)
-    // getUserData()
     getUserData()
+
   }, []);
 
   return (
@@ -162,7 +171,7 @@ export default function Home() {
                 style={styles.AmountImg}
               >
                 <Text style={styles.BalanceText}>Your balance</Text>
-                <Text style={styles.AmountText}>$238</Text>
+                <Text style={styles.AmountText}>{UserData ? '$' + UserData.balance : 0}</Text>
               </ImageBackground>
 
               <View style={styles.ButtonContainer}>
@@ -195,7 +204,18 @@ export default function Home() {
                 {
                   UserTransactionsData ?
                     (
-                      <FlatList
+                      // <FlatList
+                      //   data={myDataArray}
+                      //   renderItem={({ item }) => (
+                      //     <View style={styles.itemContainer}>
+                      //       <Text>{item.name}</Text>
+                      //       <Text>{item.amount}</Text>
+                      //       <Text>{item.date}</Text>
+                      //     </View>
+                      //   )}
+
+                      // />
+                      <VirtualizedList
                         data={myDataArray}
                         renderItem={({ item }) => (
                           <View style={styles.itemContainer}>
@@ -204,6 +224,11 @@ export default function Home() {
                             <Text>{item.date}</Text>
                           </View>
                         )}
+                        getItemCount={() => { myDataArray.length }}
+                        initialNumToRender={10}
+                        windowSize={10}
+                        maxToRenderPerBatch={10}
+                        updateCellsBatchingPeriod={50}
                       />
                     )
                     :

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react'
 import { Navigate, Outlet } from 'react-router-dom'
 import axios from 'axios'
 import Cookies from 'js-cookie';
-import CircularProgress from '@mui/material/CircularProgress';
 import LoadingPage from './LoadingPage'
 
 const PrivateRoutes = () => {

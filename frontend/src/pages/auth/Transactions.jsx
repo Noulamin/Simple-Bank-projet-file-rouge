@@ -34,22 +34,7 @@ function TransactionsContent() {
 
   const [IsProgress, setIsProgress] = useOutletContext()
 
-  const [value, setValue] = React.useState(options[0])
-  const [inputValue, setInputValue] = React.useState('')
   const [UserTransactionsData, setUserTransactionsData] = useState()
-
-  const style = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 400,
-    bgcolor: 'background.paper',
-    border: '1px solid #000',
-    boxShadow: 24,
-    p: 4,
-    borderRadius: 1.5
-  }
 
   const getUserData = async () => {
 
