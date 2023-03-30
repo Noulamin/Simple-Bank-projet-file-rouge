@@ -16,18 +16,18 @@ import {
   ImageBackground,
   FlatList,
   ToastAndroid,
-  ActivityIndicator
+  ActivityIndicator,
+  Modal
 } from "react-native";
 import { useState, useEffect, useRef } from "react"
 import VerifyToken from '../components/VerifyToken'
 import { Dialog } from 'react-native-simple-dialogs';
 import { SelectList } from 'react-native-dropdown-select-list'
-
-
-
 import axios from 'axios'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function Home() {
+export default function Home({ navigation }) {
+
   const drawerLeft = useRef(null)
   const drawerRight = useRef(null)
   const [refreshing, setRefreshing] = useState(false)
@@ -43,7 +43,8 @@ export default function Home() {
   const [SendAmount, setSendAmount] = useState('')
   const [SendTarget, setSendTarget] = useState('')
   const [IsSendDisabled, setIsSendDisabled] = useState(false)
-
+  const [ShowModal, setShowModal] = useState(true)
+  const [Ip, setIp] = useState('172.16.9.172')
 
   const onRefresh = () => {
     setRefreshing(true)
@@ -51,27 +52,27 @@ export default function Home() {
     setTimeout(() => {
       setRefreshing(false)
     }, 2000);
-  };
+  }
 
   const navigationViewLeft = () => (
     <View style={[styles.container, styles.navigationContainer]}>
       <Text style={styles.Home_text}>Hello there!</Text>
       <Button
-        title="Close Now"
-        onPress={() => drawerLeft.current.closeDrawer()}
+        title="Logout"
+        onPress={() => { drawerLeft.current.closeDrawer(), logout() }}
       />
     </View>
-  );
+  )
 
   const navigationViewRight = () => (
     <View style={[styles.container, styles.navigationContainer]}>
-      <Text style={styles.Home_text}>Check Notifications here!</Text>
+      <Text style={styles.Home_text}>You can check Notifications here!</Text>
       <Button
         title="Close Now"
-        onPress={() => drawerRight.current.closeDrawer()}
+        onPress={() => { drawerRight.current.closeDrawer() }}
       />
     </View>
-  );
+  )
 
   const left_drawer = () => {
     drawerLeft.current.openDrawer();
@@ -102,11 +103,11 @@ export default function Home() {
 
   const getUserData = async () => {
 
-    VerifyToken().then(async (data) => {
+    VerifyToken(Ip).then(async (data) => {
       if (data) {
         setUserData(data)
-
-        await axios.get('http://172.16.9.172:8080/dashboard/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0MTljMTk4YmUxM2U5ZTE0YWU5ODQ0OSIsImlhdCI6MTY4MDAwMDM1NX0.IHeYJILgD3uuux2aSvrZtw0B5OIY0L02d7tzsqqWlRw').then((res) => {
+        setShowModal(false)
+        await axios.get('http://' + Ip + ':8080/dashboard/' + global.token).then((res) => {
           if (res.status === 200) {
             setAllFriendsData(res.data)
           }
@@ -114,7 +115,7 @@ export default function Home() {
           console.log(error)
         })
 
-        await axios.get('http://172.16.9.172:8080/transactions/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0MTljMTk4YmUxM2U5ZTE0YWU5ODQ0OSIsImlhdCI6MTY4MDAwMDM1NX0.IHeYJILgD3uuux2aSvrZtw0B5OIY0L02d7tzsqqWlRw').then((res) => {
+        await axios.get('http://' + Ip + ':8080/transactions/' + global.token).then((res) => {
           if (res.status === 200) {
             let data = []
             res.data.map((row) => (
@@ -130,6 +131,7 @@ export default function Home() {
         }).catch((error) => {
           console.log(error)
         })
+        setTimeout(() => setShowModal(false), 1000);
       }
     })
   }
@@ -155,14 +157,20 @@ export default function Home() {
       return
     }
 
+    if (SendAmount < 0) {
+      ToastAndroid.show('Amount cannot be under $0.', ToastAndroid.SHORT)
+      setIsSendDisabled(false)
+      return
+    }
+
     const SendData = {
-      token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0MTljMTk4YmUxM2U5ZTE0YWU5ODQ0OSIsImlhdCI6MTY4MDAwMDM1NX0.IHeYJILgD3uuux2aSvrZtw0B5OIY0L02d7tzsqqWlRw',
+      token: global.token,
       target: AllFriendsData.find(user => user.firstName + ' ' + user.lastName === SendTarget)._id,
       amount: SendAmount,
     }
 
     try {
-      const res = await axios.post('http://172.16.9.172:8080/dashboard/SendAmount', SendData, { withCredentials: true });
+      const res = await axios.post('http://' + Ip + ':8080/dashboard/SendAmount', SendData, { withCredentials: true });
       if (res.status === 200) {
         setIsSendDisabled(false)
         ToastAndroid.show(res.data, ToastAndroid.SHORT)
@@ -182,14 +190,36 @@ export default function Home() {
     }
   }
 
-
   useEffect(() => {
-    // setIsProgress(true)
+    console.log('Home : ')
     getUserData()
   }, []);
 
+  const logout = () => {
+    AsyncStorage.removeItem('token')
+    setUserTransactionsData(null)
+    setUserData(null)
+    setAllFriendsData()
+    setAllFriends([''])
+    setSendModalVisible(false)
+    setSendAmount('')
+    setSendTarget('')
+    setIsSendDisabled(false)
+    setShowModal(true)
+    global.token = undefined
+
+    setTimeout(() => {
+      navigation.navigate('Login')
+    }, 1000)
+  }
+
   return (
     <>
+      <Modal visible={ShowModal}>
+        <View style={styles.modalView}>
+          <ActivityIndicator size="large" color="black" />
+        </View>
+      </Modal>
       <DrawerLayoutAndroid
         style={styles.drawer}
         drawerPosition={"left"}
@@ -288,22 +318,33 @@ export default function Home() {
                 {
                   UserTransactionsData ?
                     (
-                      <FlatList
-                        data={UserTransactionsData}
-                        renderItem={({ item }) => (
-                          <View style={styles.itemContainer}>
-                            <Text style={{ color: 'black' }}>{item.target}</Text>
-                            {item.product === 'Amount requested' ? <Text style={{ color: 'orange' }}>{item.amount}</Text> : item.amount > 0 ? <Text style={{ color: 'green' }}>{item.amount}</Text> : <Text style={{ color: 'red' }}>{item.amount}</Text>}
-                            <Text style={{ color: 'black' }}>{item.date}</Text>
+                      UserTransactionsData != '' ?
+                        (
+                          <FlatList
+                            data={UserTransactionsData}
+                            renderItem={({ item }) => (
+                              <View style={styles.itemContainer}>
+                                <Text style={{ color: 'black' }}>{item.target}</Text>
+                                {item.product === 'Amount requested' ? <Text style={{ color: 'orange' }}>{item.amount}</Text> : item.amount > 0 ? <Text style={{ color: 'green' }}>{item.amount}</Text> : <Text style={{ color: 'red' }}>{item.amount}</Text>}
+                                <Text style={{ color: 'black' }}>{item.date}</Text>
+                              </View>
+                            )}
+                          />
+                        )
+                        :
+                        (
+                          <View style={styles.modalView}>
+                            <Text>
+                              No transactions yet.
+                            </Text>
                           </View>
-                        )}
-                      />
+                        )
                     )
                     :
                     (
-                      <Text>
-                        No data.
-                      </Text>
+                      <View style={styles.modalView}>
+                        <ActivityIndicator size="large" color="black" />
+                      </View>
                     )
                 }
 
@@ -356,7 +397,7 @@ export default function Home() {
 
             <TouchableOpacity
               disabled={IsSendDisabled}
-              onPress={() => { SendAmountHandler() }}
+              onPress={() => { setSendModalVisible(false) }}
               style={{
                 backgroundColor: IsSendDisabled ? '#E0E0E0' : 'black', height: 49,
                 width: '100%',
@@ -370,15 +411,6 @@ export default function Home() {
               </Text>
             </TouchableOpacity>
           </View>
-
-          {/* <View style={{ marginTop: 8 }}>
-            <Button
-              title="Cancel"
-              disabled={IsSendDisabled}
-              color="black"
-              onPress={() => setSendModalVisible(false)}
-            />
-          </View> */}
         </View>
       </Dialog>
     </>
@@ -541,4 +573,9 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 17
   },
+  modalView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
+  }
 })

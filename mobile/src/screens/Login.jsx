@@ -6,17 +6,59 @@ import {
   TextInput,
   TouchableOpacity,
   Dimensions,
-  ActivityIndicator
+  ActivityIndicator,
+  ToastAndroid,
+  Modal
 } from "react-native";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import logo from '../../public/images/simple.jpg'
+import axios from 'axios'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function Login() {
+export default function Login({ navigation }) {
 
+  const [Ip, setIp] = useState('172.16.9.172')
+  const [Email, setEmail] = useState('')
+  const [Password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [ShowModal, setShowModal] = useState(true)
 
-  const HandleButton = () => {
+  useEffect(() => {
+    console.log("Login : ")
+  }, [])
+
+
+
+  const HandleButton = async () => {
     setIsLoading(true)
+
+    if (Email.length === 0 || Password.length === 0) {
+      ToastAndroid.show('Please fill all fields.', ToastAndroid.SHORT)
+      setIsLoading(false)
+      return
+    }
+
+    const LoginData = {
+      email: Email,
+      password: Password
+    }
+
+    try {
+      const res = await axios.post('http://' + Ip + ':8080/api/auth/login', LoginData, { withCredentials: true });
+      if (res.status === 200) {
+        AsyncStorage.setItem('token', res.data)
+        global.token = res.data
+        setIsLoading(false)
+        navigation.navigate('Home')
+      }
+      else {
+        ToastAndroid.show(res.data, ToastAndroid.SHORT)
+        setIsLoading(false)
+      }
+    } catch (error) {
+      ToastAndroid.show(error.toJSON().message, ToastAndroid.SHORT)
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -26,13 +68,13 @@ export default function Login() {
         <TextInput
           style={styles.input}
           placeholder="Email Address"
-        // onChangeText={InputTextOnChange}
+          onChangeText={(Value) => { setEmail(Value) }}
         />
         <TextInput
           style={styles.input}
           placeholder="Password"
           secureTextEntry={true}
-        // onChangeText={InputTextOnChange}
+          onChangeText={(Value) => { setPassword(Value) }}
         />
         <TouchableOpacity
           disabled={isLoading}

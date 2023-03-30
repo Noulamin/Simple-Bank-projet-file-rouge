@@ -5,14 +5,16 @@ const Stack = createNativeStackNavigator();
 // import Detail from "./src/screens/Detail";
 import Login from "./src/screens/Login";
 import Home from "./src/screens/Home";
+import Check from "./src/screens/Check";
 
 const App = () => {
   return (
     <>
       <NavigationContainer>
         <Stack.Navigator>
-          <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
+          <Stack.Screen name="Check" component={Check} options={{ headerShown: false }} />
           <Stack.Screen name="Home" component={Home} options={{ headerShown: false }} />
+          <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
         </Stack.Navigator>
       </NavigationContainer>
     </>

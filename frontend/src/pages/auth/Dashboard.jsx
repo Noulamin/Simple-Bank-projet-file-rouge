@@ -132,7 +132,7 @@ function DashboardContent() {
 
     if (data.get('amount') == '0') {
       setAlertType('error')
-      setAlertMessage("You cannot send 0 amount.")
+      setAlertMessage("You cannot send $0 amount.")
       setSendIsLoading(false)
       setShowAlert(true)
       return
@@ -141,6 +141,14 @@ function DashboardContent() {
     if (UserData.balance < data.get('amount')) {
       setAlertType('error')
       setAlertMessage("insufficient balance.")
+      setSendIsLoading(false)
+      setShowAlert(true)
+      return
+    }
+
+    if (data.get('amount') < 0) {
+      setAlertType('error')
+      setAlertMessage("Amount cannot be under $0.")
       setSendIsLoading(false)
       setShowAlert(true)
       return
@@ -220,6 +228,14 @@ function DashboardContent() {
       setAlertType('error')
       setAlertMessage("You cannot Request 0 amount.")
       setRequestIsLoading(false)
+      setShowAlert(true)
+      return
+    }
+
+    if (data.get('amount') < 0) {
+      setAlertType('error')
+      setAlertMessage("Amount cannot be under $0.")
+      setSendIsLoading(false)
       setShowAlert(true)
       return
     }
