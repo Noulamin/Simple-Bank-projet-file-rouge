@@ -136,6 +136,13 @@ export default function Home({ navigation }) {
     })
   }
 
+  
+  
+  useEffect(() => {
+    console.log('Home : ')
+    getUserData()
+  }, []);
+
   const SendAmountHandler = async () => {
     setIsSendDisabled(true)
 
@@ -189,11 +196,6 @@ export default function Home({ navigation }) {
       setSendModalVisible(false)
     }
   }
-
-  useEffect(() => {
-    console.log('Home : ')
-    getUserData()
-  }, []);
 
   const logout = () => {
     AsyncStorage.removeItem('token')
@@ -313,6 +315,7 @@ export default function Home({ navigation }) {
                 </Text>
               </View>
             </View>
+          </ScrollView>
             <View style={styles.ViewContainerEnd}>
               <View style={styles.activitiesContainer} >
                 {
@@ -350,7 +353,6 @@ export default function Home({ navigation }) {
 
               </View>
             </View>
-          </ScrollView>
         </DrawerLayoutAndroid>
       </DrawerLayoutAndroid>
 

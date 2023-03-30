@@ -48,8 +48,11 @@ export default function Login({ navigation }) {
       if (res.status === 200) {
         AsyncStorage.setItem('token', res.data)
         global.token = res.data
-        setIsLoading(false)
-        navigation.navigate('Home')
+        
+        setTimeout(() => {
+          setIsLoading(false)
+          navigation.navigate('Home')
+        }, 1000)
       }
       else {
         ToastAndroid.show(res.data, ToastAndroid.SHORT)
