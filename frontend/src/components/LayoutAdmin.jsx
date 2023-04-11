@@ -11,8 +11,6 @@ import '../style/dashboard.css'
 import { Outlet } from 'react-router-dom'
 import { initializeApp } from 'firebase/app';
 import { getMessaging, getToken, onMessage } from 'firebase/messaging';
-import { onBackgroundMessage } from "firebase/messaging/sw";
-
 
 
 const drawerWidth = 240;

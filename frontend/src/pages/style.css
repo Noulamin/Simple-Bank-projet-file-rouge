@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik+Pixels&display=swap');
+
 .logo {
     max-width: 194px;
     padding: 0px;
@@ -39,4 +41,23 @@
 
 .homePageLogo {
     max-width: 174px
+}
+
+.notfound{
+    width: 100%;
+    height: 90vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: blue;
+    font-size: 43px;
+    font-family: 'Rubik Pixels';
+    flex-direction: column;
+}
+
+.notfound404{
+    margin: 0;
+    color: blue;
+    font-size: 43px;
+    font-family: 'Rubik Pixels';
 }
