@@ -1,4 +1,4 @@
-FROM node:16.17.1
+FROM node
 
 WORKDIR /backend
 
@@ -6,13 +6,15 @@ COPY package.json /backend/
 
 RUN npm install
 
-ENV DATABASE mongodb+srv://Noulamin:Gmail.conm1@rent-app.rpquwmf.mongodb.net/Syndicat
-ENV PORT 8080
-ENV JWT_SECRET JWT_SECRET
-ENV PASSWORD_SALT lol
+ENV DATABASE = 'mongodb+srv://Noulamin:Noulamin@bank.oazghqf.mongodb.net/BankDatabase'
+ENV PORT = 8080
+ENV JWT_SECRET = lol
+ENV PASSWORD_SALT = lola
+ENV EMAIL = nouamanlamkadm@gmail.com
+ENV PASSWORD_EMAIL = vessogzljitbovqp
 
 COPY . .
 
 EXPOSE 8080
 
-CMD ["npm", "start"]
+CMD ["npx", "nodemon"]

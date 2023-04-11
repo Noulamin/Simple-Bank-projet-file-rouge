@@ -21,7 +21,7 @@ const PublicRoutes = () => {
                 setCanCheck(true)
             }
         }).catch((error) => {
-            console.log(error);
+            console.log(error)
             setIsVerify(false)
             setCanCheck(true)
         })

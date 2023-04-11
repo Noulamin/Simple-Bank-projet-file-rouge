@@ -22,7 +22,7 @@ const PrivateRoutes = () => {
                 setIsLoading(true)
             }
         }).catch((error) => {
-            console.log(error);
+            console.log(error)
             setIsVerify(false)
             setIsLoading(true)
         })
