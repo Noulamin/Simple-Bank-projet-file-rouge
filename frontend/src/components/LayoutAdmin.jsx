@@ -9,9 +9,6 @@ import ListItems from './ListItems';
 import logoImg from '../images/logo.png'
 import '../style/dashboard.css'
 import { Outlet } from 'react-router-dom'
-import { initializeApp } from 'firebase/app';
-import { getMessaging, getToken, onMessage } from 'firebase/messaging';
-
 
 const drawerWidth = 240;
 
@@ -76,43 +73,7 @@ function LayoutAdmin() {
     }
 
     useEffect(() => {
-        let firebaseConfig = {
-            messagingSenderId: "881631058788",
-            apiKey: "AIzaSyCJr0ETHYw-3JQFmHTkvOGvjtNFDLFW4EE",
-            authDomain: "simple-bank-f2b85.firebaseapp.com",
-            projectId: "simple-bank-f2b85",
-            storageBucket: "simple-bank-f2b85.appspot.com",
-            messagingSenderId: "881631058788",
-            appId: "1:881631058788:web:52a75769cef281fa753871"
-        };
 
-        initializeApp(firebaseConfig);
-
-        const messaging = getMessaging();
-
-        getToken(messaging, { vapidKey: `BA0gsmo-elEkfm5BQwknV-5RhsShNJOJlUE4YcRuBLZHpM-2cQvy3xZJD-MCQo4I16SOW0alHNGB0m8R9qA35mI` })
-            .then((currentToken) => {
-                if (currentToken) {
-                    console.log('current token for client: ', currentToken);
-                    // Perform any other neccessary action with the token
-                } else {
-                    // Show permission request UI
-                    console.log('No registration token available. Request permission to generate one.');
-                }
-            })
-            .catch((err) => {
-                console.log('An error occurred while retrieving token. ', err);
-            });
-
-        Notification.requestPermission().then((permission) => {
-            if (permission === 'granted') {
-                console.log('Notification permission granted.');
-            }
-        })
-
-        onMessage(messaging, (payload) => {
-            console.log(payload)
-        })
     }, [])
 
     return (

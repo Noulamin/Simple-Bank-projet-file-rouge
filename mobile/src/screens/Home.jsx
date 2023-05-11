@@ -44,7 +44,7 @@ export default function Home({ navigation }) {
   const [SendTarget, setSendTarget] = useState('')
   const [IsSendDisabled, setIsSendDisabled] = useState(false)
   const [ShowModal, setShowModal] = useState(true)
-  const [Ip, setIp] = useState('172.16.9.172')
+  const [Ip, setIp] = useState('192.168.1.101')
 
   const onRefresh = () => {
     setRefreshing(true)
@@ -139,7 +139,6 @@ export default function Home({ navigation }) {
   
   
   useEffect(() => {
-    console.log('Home : ')
     getUserData()
   }, []);
 

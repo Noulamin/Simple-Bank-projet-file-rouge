@@ -17,17 +17,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Login({ navigation }) {
 
-  const [Ip, setIp] = useState('172.16.9.172')
+  const [Ip, setIp] = useState('192.168.1.101')
   const [Email, setEmail] = useState('')
   const [Password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [ShowModal, setShowModal] = useState(true)
 
   useEffect(() => {
-    console.log("Login : ")
   }, [])
-
-
 
   const HandleButton = async () => {
     setIsLoading(true)

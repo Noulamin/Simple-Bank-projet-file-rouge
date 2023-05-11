@@ -4,7 +4,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export default function Check({ navigation }) {
 
   useEffect(() => {
-    console.log('Check : ')
     AsyncStorage.getItem('token')
       .then(value => {
         if (value != null) {
